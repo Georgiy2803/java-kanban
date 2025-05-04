@@ -1,7 +1,9 @@
+package Task;
+
 public class Task  {
     protected String name;
     protected String description;
-    protected int id;
+    protected Integer id;
     protected Status status;
 
     public Task(String name, String description, int id, Status status) {
@@ -45,9 +47,11 @@ public class Task  {
 
     @Override
     public String toString() {
-        return " 'id' - " + id +
-                ", " + getClass() +" - " + name +
-                ", 'Статус' - " + status +
-                ", 'Описание' - " + description + "\n";
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", id=" + id +
+                ", status=" + status +
+                '}';
     }
 }
