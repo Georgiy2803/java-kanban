@@ -1,14 +1,14 @@
-package TaskManager;
+package taskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import TaskManager.Model.Task;
-import TaskManager.Model.Epic;
-import TaskManager.Model.Subtask;
-import TaskManager.Model.Status;
+import taskManager.model.Task;
+import taskManager.model.Epic;
+import taskManager.model.Subtask;
+import taskManager.model.Status;
 
 
 public class TaskManager {
@@ -27,26 +27,16 @@ public class TaskManager {
 
     // 2a. Получение списка всех задач
     public List<Task> getTasks() {
-        List listTask = new ArrayList<>(taskMap.values());
-        return listTask;
+        return new ArrayList<>(taskMap.values());
     }
 
     public List<Epic> getEpics() {
-        List listEpic = new ArrayList<>(epicMap.values());
-        return listEpic;
+        return new ArrayList<>(epicMap.values());
     }
 
     public List<Subtask> getSubtask() {
-        List listSubtask = new ArrayList<>(subtaskMap.values());
-        return listSubtask;
+        return new ArrayList<>(subtaskMap.values());
     }
-
-
-    /* Комментарий ревьюера - снова, должно быть три отдельных метода, потому что удаление каждого из типов тасков
-    происходит по-разному.
-
-    Вопрос - Как это по-разному? Это же один тип хеш-таблиц (с не много разными типами в value) и очищаются
-    одной и той же командой. */
 
     // 2b. Удаление всех задач.
     public void deleteAllTasks() { // удаление всех Task
@@ -61,23 +51,14 @@ public class TaskManager {
     public void deleteAllSubtask() { // Удаление всех Subtask. Очистка списков у Эпиков и обновление их статуса
         for (Subtask subtask : getSubtask()) {
             int idEpic = subtask.getEpicId(); // получаем id Epic к которому привязаны
-            Epic Epic = epicMap.get(idEpic); // находим Эпик в мапе
-            if (!Epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список
-                Epic.getListSubtaskIds().clear(); // очищаем список
+            Epic epic = epicMap.get(idEpic); // находим Эпик в мапе
+            if (!epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список
+                epic.getListSubtaskIds().clear(); // очищаем список
             }
+            updateEpicStatus(idEpic); // Обновление статуса Эпика
         }
         subtaskMap.clear(); // удаляем все Subtask
     }
-
-
-    /*
-     2) а вот проверку на null как минимум пока что можно убрать, у optional есть метод Optional.ofNullable(обьект);
-он автоматически вернет Optional.empty() если обьект равен null
-3) тут это не так акутально, но все же , обычно операция чтения записи из хранилища - считатся одними из саых долгих,
-и поэтому первая потимизация это уменьшить количество таких обращений, поэтому можно вместо того чтобы несколько раз
-делать taskMap.get(id) , вызвать один раз и запистаь в переменную
-     */
-
 
     // 2c. Получение по идентификатору.
     public Optional<Task> getTaskById(int id) { // getTaskById
@@ -111,25 +92,25 @@ public class TaskManager {
         return inputEpic;
     }
 
-    public Subtask createSubtask(Subtask inputSubtask) { // метод из пачки
-        int idEpic = inputSubtask.getEpicId(); // получаем id Epic к которому привязаны
-        Epic Epic = epicMap.get(idEpic); // находим Эпик в мапе
-        if (Epic != null) {
-            inputSubtask.setId(getNextId());
-            subtaskMap.put(id, inputSubtask);
-            addSubtaskToEpic(inputSubtask); // записывает в Эпик номер id Subtask к которому он привязан
+    public Subtask createSubtask(Subtask inputSubtask) { // создание Subtask
+        Epic epic = epicMap.get(inputSubtask.getEpicId()); // находим Эпик в мапе (получаем id Epic к которому привязаны)
+        if (epic == null) {
+            return null;
         }
+        inputSubtask.setId(getNextId());
+        subtaskMap.put(id, inputSubtask);
+        addSubtaskToEpic(inputSubtask); // записывает в Эпик номер id Subtask к которому он привязан
         return inputSubtask;
     }
 
     //метод, записывает в Эпик (в список подзадач которые в него входят) номер id Subtask к которому он привязан
     private void addSubtaskToEpic(Subtask inputSubtask) {
-        int EpicId = inputSubtask.getEpicId();  // узнаём id Эпик к которому привязан Subtask
-        Epic epic = epicMap.get(EpicId); // Находим Эпик по id
+        int epicId = inputSubtask.getEpicId();  // узнаём id Эпик к которому привязан Subtask
+        Epic epic = epicMap.get(epicId); // Находим Эпик по id
         if (epic != null) { // Проверка, если такого Эпика не существует
             epic.getListSubtaskIds().add(inputSubtask.getId()); // добавляем id Subtask в Список Эпика
         }
-        updateEpicStatus(EpicId);
+        updateEpicStatus(epicId);
     }
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
@@ -161,13 +142,9 @@ public class TaskManager {
 
     // Обновление статуса Эпика
     private void updateEpicStatus(int epicId) {
-        //int epicId = inputSubtask.getEpicId();  // узнаём id Эпик к которому привязан Subtask
-        // Epic epic = epicMap.get(epicId); // Находим Эпик по id
         Epic epic = epicMap.get(epicId);
         double sum = 0; // количество завершённых подзадач у Эпика
         for (Subtask subtask : listOfEpicSubtasks(epicId)) {
-            //for (int id : epic.getListSubtaskIds()) { // проходимся по списку подзадач Эпика
-            //Subtask subtask = subtaskMap.get(id); // Находим Subtask
             Status status = subtask.getStatus(); // Вытаскиваем у Subtask его Статус
             if (status.equals(Status.DONE)) {  // Проверяем Статус, если завершён, то..
                 sum = sum + 1; // прибавляем 1
@@ -175,14 +152,12 @@ public class TaskManager {
                 sum = sum + 0.5; // прибавляем 0,5
             }
         }
-        if (sum == 0) {
-            epic.setStatus(Status.NEW);
+        if (sum == 0) { // если все подзадачи новые или их нет
+            epic.setStatus(Status.NEW);  // присваиваем Эпику Статус - Новое.
         } else if (sum == epic.getListSubtaskIds().size()) { // если все подзадачи завершены
             epic.setStatus(Status.DONE); // присваиваем Эпику Статус - Завершён.
-        } else if (sum >= 0.5) { // если выполнена хоть одна подзадача не завершена или в процессе
+        } else { // если выполнена хоть одна подзадача не завершена или в процессе
             epic.setStatus(Status.IN_PROGRESS); // присваиваем Эпику Статус - В процессе.
-        } else {
-            epic.setStatus(Status.NEW); // присваиваем Эпику Статус - Новое.
         }
     }
 
@@ -201,7 +176,6 @@ public class TaskManager {
         epicMap.remove(id);
     }
 
-    //когда удаляем сабтаск, надо удалить его из списка сабтасков эпика, и пересчитать статус эпика
     public void deleteByIdSubtask(int id) {
         int idEpic = subtaskMap.get(id).getEpicId(); // получаем id Epic к которому привязан Subtask
         Epic epic = epicMap.get(idEpic); // находим Эпик в мапе

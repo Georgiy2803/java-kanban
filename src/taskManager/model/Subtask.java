@@ -1,4 +1,4 @@
-package TaskManager.Model;
+package taskManager.model;
 
 public class Subtask extends Task {
 

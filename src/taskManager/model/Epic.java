@@ -1,4 +1,4 @@
-package TaskManager.Model;
+package taskManager.model;
 
 import java.util.ArrayList;
 
@@ -28,7 +28,6 @@ public class Epic extends Task{
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
-                ", status=" + status + ", подзадачи: " + listSubtaskIds +
-                '}' + " \n";
+                ", status=" + status + ", подзадачи: " + listSubtaskIds + " \n";
     }
 }

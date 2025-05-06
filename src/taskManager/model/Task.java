@@ -1,4 +1,4 @@
-package TaskManager.Model;
+package taskManager.model;
 
 public class Task  {
     protected String name;
@@ -65,7 +65,6 @@ public class Task  {
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
-                ", status=" + status +
-                '}' + " \n";
+                ", status=" + status + " \n";
     }
 }

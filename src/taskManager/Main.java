@@ -1,9 +1,9 @@
-package TaskManager;
+package taskManager;
 
-import TaskManager.Model.Task;
-import TaskManager.Model.Epic;
-import TaskManager.Model.Subtask;
-import TaskManager.Model.Status;
+import taskManager.model.Task;
+import taskManager.model.Epic;
+import taskManager.model.Subtask;
+import taskManager.model.Status;
 
 public class Main {
     public static void main(String[] args) {
@@ -69,9 +69,9 @@ public class Main {
         //manager.ListOfEpicSubtasks (3); // Получение списка всех подзадач определённого эпика
         System.out.println("Список подзадач определённого эпика \n" +manager.listOfEpicSubtasks(3) +"\n");
 
-        //manager.deleteAllSubtask();
+        manager.deleteAllSubtask();
         manager.deleteByIdTask(1); // Удаляем задачу
-        manager.deleteByIdEpic(3); // Удаляем Эпик
+        //manager.deleteByIdEpic(3); // Удаляем Эпик
       // manager.deleteByIdSubtask(6); // Удаляем Подзадачу
 
         //System.out.println(manager.getEpics());
