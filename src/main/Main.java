@@ -1,21 +1,35 @@
-package taskManager;
+package main;
 
-import taskManager.model.Task;
-import taskManager.model.Epic;
-import taskManager.model.Subtask;
-import taskManager.model.Status;
+import main.managers.Managers;
+import main.managers.history.HistoryManager;
+import main.managers.task.InMemoryTaskManager;
+import main.managers.task.TaskManager;
+import main.model.Task;
+import main.model.Epic;
+import main.model.Subtask;
+import main.model.Status;
+
+
+
+//  Александр, вопрос. А разве в данном проект main не для меня, как инструмент проверить и понять как работает код?
+// Его обязательно содержать чистим перед сдачей на проверку?
+// Просто я в нём постоянно, что-то экспериментирую и для этого мне нужен весь закомментированный код.
 
 public class Main {
     public static void main(String[] args) {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        HistoryManager historyManager = Managers.getDefaultHistory();
+      //  InMemoryTaskManager taskManager = new InMemoryTaskManager(historyManager);
+       // HistoryManager historyManager = Managers.getDefaultHistory();
+      //  TaskManager manager = Managers.getDefault();
+
         TaskManager manager = Managers.getDefault();
+        HistoryManager historyManager = Managers.getDefaultHistory();
 
         manager.createTask(new Task("Купить продукты", "Молоко, хлеб, помидоры"));
         manager.createTask(new Task("Провести тренировку", "Подтягивание, отжимание, приседания"));
 
         manager.createEpic(new Epic("Переезд", "В другой офис"));
         manager.createEpic(new Epic("Ремонт на даче", "Составить список материалов"));
+       manager.createEpic(new Epic("name", "description", 1));
 
         manager.createSubtask(new Subtask("Купить коробки", "Размер 350х350х300", 3));
         manager.createSubtask(new Subtask("Купить скотч", "5 шт. - прозрачного",  3));
@@ -34,7 +48,7 @@ public class Main {
       //  System.out.println(manager.getIdHistory);
         System.out.println(manager.getTasks());
         System.out.println(manager.getEpics());
-        System.out.println(manager.getSubtask());
+     //   System.out.println(manager.getSubtask());
 
         //manager.addIdGetIdHistory1();
 
@@ -49,15 +63,16 @@ public class Main {
 
         manager.updateTask(new Task("Купить продукты", "Молоко, хлеб, помидоры", 1, Status.DONE));
         manager.updateTask(new Task("Провести тренировку", "Подтягивание, отжимание, приседания", 2, Status.IN_PROGRESS));
-
+        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
         System.out.println("2 вывод");
         // manager.getAllTasks();
         System.out.println(manager.getTasks());
-        System.out.println(manager.getEpics());
-        System.out.println(manager.getSubtask());
+      //  System.out.println(manager.getEpics());
+      //  System.out.println(manager.getSubtask());
+        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
         System.out.println("Конец \n");
 
-        manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
+        /*manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
         manager.updateSubtask(new Subtask("Купить скотч1", "5 шт. - прозрачного", 6, Status.DONE));
         manager.updateSubtask(new Subtask("Составить план1", "Начертить схему", 7, Status.DONE));
 
@@ -98,6 +113,6 @@ public class Main {
        // System.out.println("Последние просмотренные задачи: \n" + manager.getHistory1());
 
         System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
-        System.out.println("Конец \n");
+        System.out.println("Конец \n");*/
     }
 }

@@ -1,8 +1,8 @@
-package taskManager;
+package main.managers.task;
 
-import taskManager.model.Epic;
-import taskManager.model.Subtask;
-import taskManager.model.Task;
+import main.model.Epic;
+import main.model.Subtask;
+import main.model.Task;
 
 import java.util.ArrayList;
 import java.util.List;

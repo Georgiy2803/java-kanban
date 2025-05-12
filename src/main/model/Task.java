@@ -1,4 +1,4 @@
-package taskManager.model;
+package main.model;
 
 public class Task  {
     protected String name;
@@ -43,11 +43,11 @@ public class Task  {
         this.description = description;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

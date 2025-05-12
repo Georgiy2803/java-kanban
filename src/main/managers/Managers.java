@@ -1,4 +1,4 @@
-package taskManager;
+package main.managers;
 
 /*
 Описание в ТЗ.
@@ -14,13 +14,20 @@ Managers должен сам подбирать нужную реализаци�
 будет TaskManager.
  */
 
+import main.managers.history.HistoryManager;
+import main.managers.history.InMemoryHistoryManager;
+import main.managers.task.InMemoryTaskManager;
+import main.managers.task.TaskManager;
+
 //  Managers: содержит статические методы для создания различных менеджеров:
 public class Managers {
 
-    // Метод getDefault будет без параметров. Он должен возвращать объект-менеджер, поэтому типом его возвращаемого значения будет TaskManager.
+
+
     public static TaskManager getDefault() {
-        // Здесь можно добавить логику для выбора конкретной реализации TaskManager
-        return new InMemoryTaskManager();
+
+        // Александр, вы так хотели?
+        return new InMemoryTaskManager(getDefaultHistory());
     }
 
     //  Статический метод getDefaultHistory, который возвращает объект InMemoryHistoryManager — историю просмотров.

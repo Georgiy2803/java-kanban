@@ -1,11 +1,14 @@
-package taskManager;
+package main.managers.task;
 
 import java.util.*;
 
-import taskManager.model.Task;
-import taskManager.model.Epic;
-import taskManager.model.Subtask;
-import taskManager.model.Status;
+import main.managers.history.HistoryManager;
+import main.managers.Managers;
+import main.managers.history.InMemoryHistoryManager;
+import main.model.Task;
+import main.model.Epic;
+import main.model.Subtask;
+import main.model.Status;
 
 
 public class InMemoryTaskManager implements TaskManager {
@@ -15,13 +18,22 @@ public class InMemoryTaskManager implements TaskManager {
     private HashMap<Integer, Subtask> subtaskMap;
     private int id = 0; // поле идентификатора
 
-    private HistoryManager historyManager = Managers.getDefaultHistory();
-    /*
-    Проверьте, что теперь InMemoryTaskManager обращается к менеджеру истории(InMemoryHistoryManager) через
-     интерфейс HistoryManager и использует реализацию, которую возвращает метод getDefaultHistory.
-     */
+    // private HistoryManager historyManager = Managers.getDefaultHistory(); // было
 
-    public InMemoryTaskManager() {
+    /* Если четно, вообще не понимаю, теперь как работает мой код. Я просто тыкал пока не получилось, то что вы хотели.
+    и сумел ли я вообще правильно реализовать ваш совет ниже.
+
+    Коментарий ревьюера. 3) сделать параметром конструктора
+    как по мне это лучший вариант так как мы не звисим от класса Managers и при этом остается гибкость, и в случае
+    если нам надо изменить используемый менеджер истории, нам не надо изменять код таскового менеджера, вызываем
+    конструктор с другим параметром, и все готово
+    а создание в Managers может выглядеть примерно так
+return new InMemoryTaskManager(getDefaultHistory());
+*/
+    private HistoryManager historyManager; // стало
+
+    public InMemoryTaskManager(HistoryManager historyManager) {
+        this.historyManager = historyManager;
         taskMap = new HashMap<>(); // создали объект
         epicMap = new HashMap<>();
         subtaskMap = new HashMap<>();
@@ -147,8 +159,8 @@ public class InMemoryTaskManager implements TaskManager {
     public Epic updateEpic(Epic inputEpic) {
         int oldId = inputEpic.getId();
         Epic oldEpic = epicMap.get(oldId); // находим старый Эпик в мапе
-        inputEpic.setListSubtaskIds(oldEpic.getListSubtaskIds()); // вносим новый Эпик listSubtaskIds старого (изменяемого)
-        inputEpic.setStatus(oldEpic.getStatus()); // вносим новый Эпик Status старого (изменяемого)
+        inputEpic.setListSubtaskIds(oldEpic.getListSubtaskIds()); // вносим в новый Эпик listSubtaskIds старого (изменяемого)
+        inputEpic.setStatus(oldEpic.getStatus()); // вносим в новый Эпик Status старого (изменяемого)
         epicMap.put(oldId, inputEpic); // Сохраняем обновлённый Эпик
         return inputEpic;
     }
@@ -229,6 +241,5 @@ public class InMemoryTaskManager implements TaskManager {
         }
         return listSubtasks;
     }
-
 
 }
