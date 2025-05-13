@@ -1,13 +1,13 @@
-package main;
 
-import main.managers.Managers;
-import main.managers.history.HistoryManager;
-import main.managers.task.InMemoryTaskManager;
-import main.managers.task.TaskManager;
-import main.model.Task;
-import main.model.Epic;
-import main.model.Subtask;
-import main.model.Status;
+import managers.Managers;
+import managers.history.HistoryManager;
+import managers.history.InMemoryHistoryManager;
+import managers.task.InMemoryTaskManager;
+import managers.task.TaskManager;
+import model.Task;
+import model.Epic;
+import model.Subtask;
+import model.Status;
 
 
 
@@ -17,9 +17,6 @@ import main.model.Status;
 
 public class Main {
     public static void main(String[] args) {
-      //  InMemoryTaskManager taskManager = new InMemoryTaskManager(historyManager);
-       // HistoryManager historyManager = Managers.getDefaultHistory();
-      //  TaskManager manager = Managers.getDefault();
 
         TaskManager manager = Managers.getDefault();
         HistoryManager historyManager = Managers.getDefaultHistory();
@@ -29,7 +26,7 @@ public class Main {
 
         manager.createEpic(new Epic("Переезд", "В другой офис"));
         manager.createEpic(new Epic("Ремонт на даче", "Составить список материалов"));
-       manager.createEpic(new Epic("name", "description", 1));
+       // manager.createEpic(new Epic("name", "description", 1));
 
         manager.createSubtask(new Subtask("Купить коробки", "Размер 350х350х300", 3));
         manager.createSubtask(new Subtask("Купить скотч", "5 шт. - прозрачного",  3));
@@ -52,14 +49,13 @@ public class Main {
 
         //manager.addIdGetIdHistory1();
 
-        //System.out.println("Последние просмотренные задачи: \n" + manager.getHistory1() + "\n");
+        System.out.println("Последние просмотренные задачи: \n" + manager.getHistory() + "\n");
       //  System.out.println(historyManager.last10ViewedTask);
-        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
+
 
 
         System.out.println("Конец \n");
 
-        // Измените статусы созданных объектов, распечатайте их. Проверьте, что статус задачи и подзадачи сохранился, а статус эпика рассчитался по статусам подзадач.
 
         manager.updateTask(new Task("Купить продукты", "Молоко, хлеб, помидоры", 1, Status.DONE));
         manager.updateTask(new Task("Провести тренировку", "Подтягивание, отжимание, приседания", 2, Status.IN_PROGRESS));
@@ -72,7 +68,7 @@ public class Main {
         System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
         System.out.println("Конец \n");
 
-        /*manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
+        manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
         manager.updateSubtask(new Subtask("Купить скотч1", "5 шт. - прозрачного", 6, Status.DONE));
         manager.updateSubtask(new Subtask("Составить план1", "Начертить схему", 7, Status.DONE));
 
@@ -113,6 +109,6 @@ public class Main {
        // System.out.println("Последние просмотренные задачи: \n" + manager.getHistory1());
 
         System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
-        System.out.println("Конец \n");*/
+        System.out.println("Конец \n");
     }
 }

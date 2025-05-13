@@ -1,4 +1,4 @@
-package main.model;
+package model;
 
 import java.util.ArrayList;
 
@@ -8,7 +8,6 @@ public class Epic extends Task{
 
     public Epic(String name, String description) { // Конструктор для создания
         super(name, description);
-       // this.status = Status.NEW;
     }
 
     public Epic(String name, String description, Integer id) { // Конструктор для обновления: наименования и описания
@@ -20,17 +19,11 @@ public class Epic extends Task{
         return listSubtaskIds;
     }
 
-    // решил добавить логику проверки в этот метод, чтобы не рушить другие конструкции
-    // Идеальный вариант не смог сделать. Не понял самому логику совета
-    public void setListSubtaskIds(ArrayList<Integer> subtaskIds) {
-        for (int subtaskId :listSubtaskIds){
-            if (getId() == subtaskId){ // проверка, чтобы id Эпика нельзя было добавить в список, где хранятся Подзадачи
-                return;
-            }
+    public void addSubtaskId(int subtaskId) {
+        if(subtaskId != getId()) { // проверка, чтобы id Эпика нельзя было добавить в список, где хранятся Подзадачи
+            listSubtaskIds.add(subtaskId);
         }
-        this.listSubtaskIds = subtaskIds;
     }
-
 
     @Override
     public String toString() {

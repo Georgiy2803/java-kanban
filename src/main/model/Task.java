@@ -1,6 +1,6 @@
-package main.model;
+package model;
 
-public class Task  {
+public class Task implements Cloneable  {
     protected String name;
     protected String description;
     protected Integer id;
@@ -57,6 +57,18 @@ public class Task  {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return id == task.id;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException { // для создании копии объекта в InMemoryHistoryManager
+        return super.clone();
     }
 
     @Override

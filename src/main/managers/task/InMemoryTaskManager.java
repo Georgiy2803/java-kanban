@@ -1,14 +1,14 @@
-package main.managers.task;
+package managers.task;
 
 import java.util.*;
 
-import main.managers.history.HistoryManager;
-import main.managers.Managers;
-import main.managers.history.InMemoryHistoryManager;
-import main.model.Task;
-import main.model.Epic;
-import main.model.Subtask;
-import main.model.Status;
+import managers.history.HistoryManager;
+import managers.Managers;
+import managers.history.InMemoryHistoryManager;
+import model.Task;
+import model.Epic;
+import model.Subtask;
+import model.Status;
 
 
 public class InMemoryTaskManager implements TaskManager {
@@ -18,18 +18,6 @@ public class InMemoryTaskManager implements TaskManager {
     private HashMap<Integer, Subtask> subtaskMap;
     private int id = 0; // поле идентификатора
 
-    // private HistoryManager historyManager = Managers.getDefaultHistory(); // было
-
-    /* Если четно, вообще не понимаю, теперь как работает мой код. Я просто тыкал пока не получилось, то что вы хотели.
-    и сумел ли я вообще правильно реализовать ваш совет ниже.
-
-    Коментарий ревьюера. 3) сделать параметром конструктора
-    как по мне это лучший вариант так как мы не звисим от класса Managers и при этом остается гибкость, и в случае
-    если нам надо изменить используемый менеджер истории, нам не надо изменять код таскового менеджера, вызываем
-    конструктор с другим параметром, и все готово
-    а создание в Managers может выглядеть примерно так
-return new InMemoryTaskManager(getDefaultHistory());
-*/
     private HistoryManager historyManager; // стало
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -159,7 +147,10 @@ return new InMemoryTaskManager(getDefaultHistory());
     public Epic updateEpic(Epic inputEpic) {
         int oldId = inputEpic.getId();
         Epic oldEpic = epicMap.get(oldId); // находим старый Эпик в мапе
-        inputEpic.setListSubtaskIds(oldEpic.getListSubtaskIds()); // вносим в новый Эпик listSubtaskIds старого (изменяемого)
+        //inputEpic.setListSubtaskIds(oldEpic.getListSubtaskIds()); // вносим в новый Эпик listSubtaskIds старого (изменяемого)
+        for (int subtaskId: oldEpic.getListSubtaskIds()  ) {
+            inputEpic.addSubtaskId(subtaskId);
+        }
         inputEpic.setStatus(oldEpic.getStatus()); // вносим в новый Эпик Status старого (изменяемого)
         epicMap.put(oldId, inputEpic); // Сохраняем обновлённый Эпик
         return inputEpic;

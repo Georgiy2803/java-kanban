@@ -1,23 +1,33 @@
-package test.managers.history;
+package managers.history;
 
-import main.managers.Managers;
-import main.managers.history.HistoryManager;
-import main.managers.task.TaskManager;
-import main.model.Status;
+import managers.Managers;
+import managers.history.HistoryManager;
+import managers.task.TaskManager;
+import model.Status;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import main.model.Epic;
-import main.model.Subtask;
-import main.model.Task;
+import model.Epic;
+import model.Subtask;
+import model.Task;
 
-import static main.managers.history.InMemoryHistoryManager.HISTORY_MAX_SIZE;
+import java.util.ArrayList;
+
+import static managers.history.InMemoryHistoryManager.HISTORY_MAX_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryHistoryManagerTest {
-    TaskManager manager = Managers.getDefault();
-    HistoryManager history = Managers.getDefaultHistory();
+    InMemoryHistoryManager history;
 
+    @BeforeEach
+    public void init(){
+        history = new InMemoryHistoryManager();
+    }
+
+    /* Переименовал тест, и оставил HISTORY_MAX_SIZE (puplic), потому что: если(когда) надо будет увеличить список
+    до 20 или 100, не нужно будет делать новый тест, т.к. вся его логика в том, что он выдаёт чётко ограниченное
+    количество историй, а это ограничение может легко измениться благодаря одной переменной с Вашей подачи. */
     @Test
-    void add_deleteFirst_addedMoreThenTen() { // отражение последних задач при просмотре
+    void add_deleteFirst_addedMoreThen_MAX_SIZE() { // отражение последних задач при просмотре
         int addSize = 15; // количество добавляемых задач для итерации
         for (int i = 1; i <= addSize; i++) {
             history.add(new Task("Название задачи: " + i, "Описание задачи: " + i));
@@ -32,50 +42,62 @@ class InMemoryHistoryManagerTest {
 
     //убедитесь, что задачи, добавляемые в HistoryManager, сохраняют предыдущую версию задачи и её данных.
     @Test
-    void outputOldTask_WhenUpdating() {
-        Task task1 = manager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
-        manager.getTaskById(task1.getId()); // просматриваем задачу
-        manager.updateTask(new Task("Имя 2", "Описание 2", task1.getId(), Status.DONE)); // обновляем задачу
+    void addTask_saveHistory_update() {
+        Task task1 = new Task("Имя 1", "Описание 1"); // создаём задачу
+        ArrayList<Task> tasklist = new ArrayList<>(); // создаём список имитируя добавление в InMemoryHistoryManager
+        tasklist.add(task1); // добавили задачу в InMemoryHistoryManager
+        history.add(task1); // добавляет запрос в историю просмотров
+        Task updateTask1 = new Task("Имя 2", "Описание 2"); // // создаём обновлённую задачу
+        tasklist.add(0,updateTask1); // обновляем задачу
+
         assertEquals(task1, history.getHistory().get(0), "Task не совпадают");
     }
 
 
+    // данный тест воспринимаю как совершенно бессмысленный, т.к. InMemoryHistoryManager не самостоятельный класс на мой
+    // взгляд сейчас, и чётко завязан InMemoryTaskManager и его логику. И проверять его методы выдумывая таки костыли
+    // кажется бессмысленным.
     @Test
-    void add_saveAllFields_addedTask() {
-        Task task1 = manager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
-        manager.getTaskById(task1.getId()); // просматриваем задачу
+    void addTask_saveAllFields_addTask() {
+        Task task1 = new Task("Имя 1", "Описание 1"); // создаём задачу
+        history.add(task1); // просматриваем задачу
+
         // проверяем поля
-        assertEquals(1, manager.getTaskById(task1.getId()).get().getId());
-        assertEquals("Имя 1", manager.getTaskById(task1.getId()).get().getName());
-        assertEquals("Описание 1", manager.getTaskById(task1.getId()).get().getDescription());
-        assertEquals(Status.NEW, manager.getTaskById(task1.getId()).get().getStatus());
+        assertEquals("Имя 1", history.getHistory().get(0).getName());
+        assertEquals("Описание 1", history.getHistory().get(0).getDescription());
+        assertEquals(Status.NEW, history.getHistory().get(0).getStatus());
 
     }
-
+    // здесь я вообще не понимаю как нормально без логики InMemoryTaskManager(который создаёт id, привязывает id Subtask)
+    // засунуть всё это в history, чтобы потом проверить, что я всё верно своими же руками добавил, а потом сравнить.
     @Test
-    void add_saveAllFields_addedEpic() {
-        Epic epic1 = manager.createEpic(new Epic("Имя 1", "Описание 1")); // создаём Эпик
-        manager.getEpicById(epic1.getId()); // просматриваем задачу
+    void add_saveAllFields_addEpic() {
+        Epic epic1 = new Epic("Имя 1", "Описание 1"); // создаём Эпик
+        history.add(epic1); // просматриваем Эпик
+
         // проверяем поля
-        assertEquals(1, manager.getEpicById(epic1.getId()).get().getId());
-        assertEquals("Имя 1", manager.getEpicById(epic1.getId()).get().getName());
-        assertEquals("Описание 1", manager.getEpicById(epic1.getId()).get().getDescription());
-        assertEquals(Status.NEW, manager.getEpicById(epic1.getId()).get().getStatus());
+        assertEquals("Имя 1", history.getHistory().get(0).getName());
+        assertEquals("Описание 1", history.getHistory().get(0).getDescription());
+        assertEquals(Status.NEW, history.getHistory().get(0).getStatus());
 
     }
-
+    // точно также как у Эпик
     @Test
     void add_saveAllFields_addedSubtask() {
-        Epic epic1 = manager.createEpic(new Epic("Эпик 1", "Описание эпик 1")); // создаём Эпик
-        Subtask subtask1 = manager.createSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", epic1.getId())); // создаём задачу
-        manager.getSubtaskById(subtask1.getId()); // просматриваем задачу
-        // проверяем поля
-        assertEquals(2, manager.getSubtaskById(subtask1.getId()).get().getId());
-        assertEquals("Подзадача 1", manager.getSubtaskById(subtask1.getId()).get().getName());
-        assertEquals("Описание подзадачи 1", manager.getSubtaskById(subtask1.getId()).get().getDescription());
-        assertEquals(Status.NEW, manager.getSubtaskById(subtask1.getId()).get().getStatus());
+        Epic epic1 = new Epic("Эпик 1", "Описание эпик 1"); // создаём Эпик
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1", epic1.getId()); // создаём подзадачу
+        history.add(subtask1); // просматриваем подзадачу
 
+        // проверяем поля
+        assertEquals("Подзадача 1", history.getHistory().get(0).getName());
+        assertEquals("Описание подзадачи 1", history.getHistory().get(0).getDescription());
+        assertEquals(Status.NEW, history.getHistory().get(0).getStatus());
     }
 
-
+    /*
+    Вообще кажется, что смысла тестов кроме метода add_deleteFirst_addedMoreThenTen() тут нет. Всё остальное надо
+    тестировать через InMemoryTaskManager.
+     Первоначальные тесты переместил в Тест InMemoryTaskManager, а тут мне кажется надо оставить только
+     add_deleteFirst_addedMoreThenTen.
+     */
 }
