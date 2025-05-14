@@ -19,7 +19,7 @@ public class Main {
     public static void main(String[] args) {
 
         TaskManager manager = Managers.getDefault();
-        HistoryManager historyManager = Managers.getDefaultHistory();
+        //HistoryManager historyManager = Managers.getDefaultHistory();
 
         manager.createTask(new Task("Купить продукты", "Молоко, хлеб, помидоры"));
         manager.createTask(new Task("Провести тренировку", "Подтягивание, отжимание, приседания"));
@@ -59,13 +59,13 @@ public class Main {
 
         manager.updateTask(new Task("Купить продукты", "Молоко, хлеб, помидоры", 1, Status.DONE));
         manager.updateTask(new Task("Провести тренировку", "Подтягивание, отжимание, приседания", 2, Status.IN_PROGRESS));
-        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
+        System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory()+ "\n");
         System.out.println("2 вывод");
         // manager.getAllTasks();
         System.out.println(manager.getTasks());
       //  System.out.println(manager.getEpics());
       //  System.out.println(manager.getSubtask());
-        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
+        System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory()+ "\n");
         System.out.println("Конец \n");
 
         manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
@@ -108,7 +108,7 @@ public class Main {
         System.out.println(manager.getSubtask());
        // System.out.println("Последние просмотренные задачи: \n" + manager.getHistory1());
 
-        System.out.println("Последние просмотренные задачи (новое): \n" + historyManager.getHistory()+ "\n");
+        System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory()+ "\n");
         System.out.println("Конец \n");
     }
 }

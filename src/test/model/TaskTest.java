@@ -1,4 +1,4 @@
-package managers.model;
+package model;
 
 
 import model.Task;
@@ -13,7 +13,4 @@ public class TaskTest {
         Task task2 = new Task("name", "description", 1);
         assertTrue(task1.equals(task2));
     }
-
-
-
 }
