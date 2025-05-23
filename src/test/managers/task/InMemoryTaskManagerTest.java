@@ -18,8 +18,7 @@ public class InMemoryTaskManagerTest {
 
     @BeforeEach
     public void init() {
-        HistoryManager historyManager = new InMemoryHistoryManager();
-        taskManager = new InMemoryTaskManager(historyManager);
+        taskManager = new InMemoryTaskManager(new InMemoryHistoryManager());
     }
 
 
@@ -32,13 +31,13 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getTaskById_returnSameTaskcWithSAmeFields(){
+    void getTaskById_returnSameTaskcWithSAmeFields() {
         Task task = taskManager.createTask(new Task("Название задачи", "Описание задачи"));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
         assertEquals(task.getName(), taskManager.getTaskById(task.getId()).get().getName(), "Наименования Task не совпадают");
         assertEquals(task.getDescription(), taskManager.getTaskById(task.getId()).get().getDescription(), "Описание Task не совпадают");
         assertEquals(task.getId(), taskManager.getTaskById(task.getId()).get().getId(), "id Task не совпадают");
-        assertEquals(task.getStatus(),taskManager.getTaskById(task.getId()).get().getStatus(),"Статус Task не совпадают");
+        assertEquals(task.getStatus(), taskManager.getTaskById(task.getId()).get().getStatus(), "Статус Task не совпадают");
     }
 
     @Test
@@ -65,14 +64,14 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getEpicById_returnSameEpicWithSAmeFields(){
+    void getEpicById_returnSameEpicWithSAmeFields() {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
         assertEquals(epic.getName(), taskManager.getEpicById(epic.getId()).get().getName(), "Наименования Эпик не совпадают");
         assertEquals(epic.getDescription(), taskManager.getEpicById(epic.getId()).get().getDescription(), "Описание Эпик не совпадают");
         assertEquals(epic.getId(), taskManager.getEpicById(epic.getId()).get().getId(), "id Эпик не совпадают");
-        assertEquals(epic.getStatus(),taskManager.getEpicById(epic.getId()).get().getStatus(),"Статус Эпик не совпадают");
-        assertEquals(epic.getListSubtaskIds(), taskManager.getEpicById(epic.getId()).get().getListSubtaskIds(),"Списки подзадач Эпика не совпадают");
+        assertEquals(epic.getStatus(), taskManager.getEpicById(epic.getId()).get().getStatus(), "Статус Эпик не совпадают");
+        assertEquals(epic.getListSubtaskIds(), taskManager.getEpicById(epic.getId()).get().getListSubtaskIds(), "Списки подзадач Эпика не совпадают");
     }
 
     @Test
@@ -98,21 +97,21 @@ public class InMemoryTaskManagerTest {
     @Test
     void getSubtaskById_returnSameSubtaskObject() {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
-        Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId() ));
+        Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId()));
         // проверка, что созданный Subtask и полученный по id равны
         assertEquals(subtask, taskManager.getSubtaskById(subtask.getId()).get(), "Подзадачи не совпадают");
     }
 
     @Test
-    void getSubtaskById_returnSameSubtaskWithSAmeFields(){
+    void getSubtaskById_returnSameSubtaskWithSAmeFields() {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
-        Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId() ));
+        Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId()));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
         assertEquals(subtask.getName(), taskManager.getSubtaskById(subtask.getId()).get().getName(), "Наименования подзазачи не совпадают");
         assertEquals(subtask.getDescription(), taskManager.getSubtaskById(subtask.getId()).get().getDescription(), "Описание подзазачи не совпадают");
         assertEquals(subtask.getId(), taskManager.getSubtaskById(subtask.getId()).get().getId(), "id подзазачи не совпадают");
-        assertEquals(subtask.getStatus(),taskManager.getSubtaskById(subtask.getId()).get().getStatus(),"Статус подзазачи не совпадают");
-        assertEquals(subtask.getEpicId(),taskManager.getSubtaskById(subtask.getId()).get().getEpicId(),"id связанного Эпик не совпадают");
+        assertEquals(subtask.getStatus(), taskManager.getSubtaskById(subtask.getId()).get().getStatus(), "Статус подзазачи не совпадают");
+        assertEquals(subtask.getEpicId(), taskManager.getSubtaskById(subtask.getId()).get().getEpicId(), "id связанного Эпик не совпадают");
     }
 
     @Test
@@ -124,16 +123,16 @@ public class InMemoryTaskManagerTest {
         Subtask subtask3 = taskManager.createSubtask(new Subtask("Название подзадачи3", "Описание подзадачи1", epic2.getId()));
 
         // Проверяем, что у Эпик список подзадач равен 1
-        assertEquals(1, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(),"Не верное количество подзадач у Эпик");
+        assertEquals(1, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик");
 
         taskManager.deleteByIdSubtask(subtask1.getId()); // удаляем единственную подзадачу
-        assertEquals(2, taskManager.getSubtask().size(),"Не верное количество подзадач всего");
-        assertEquals(0, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(),"Не верное количество подзадач у Эпик1");
+        assertEquals(2, taskManager.getSubtask().size(), "Не верное количество подзадач всего");
+        assertEquals(0, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик1");
 
         taskManager.deleteAllSubtask(); // удаляем все подзадачи
-        assertEquals(0, taskManager.getSubtask().size(),"Не верное количество подзадач всего");
-        assertEquals(0, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(),"Не верное количество подзадач у Эпик1");
-        assertEquals(0, taskManager.getEpicById(epic2.getId()).get().getListSubtaskIds().size(),"Не верное количество подзадач у Эпик2");
+        assertEquals(0, taskManager.getSubtask().size(), "Не верное количество подзадач всего");
+        assertEquals(0, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик1");
+        assertEquals(0, taskManager.getEpicById(epic2.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик2");
 
     }
 
@@ -144,16 +143,16 @@ public class InMemoryTaskManagerTest {
         Subtask subtask2 = taskManager.createSubtask(new Subtask("Название подзадачи2", "Описание подзадачи2", epic1.getId()));
         Subtask subtask3 = taskManager.createSubtask(new Subtask("Название подзадачи3", "Описание подзадачи1", epic1.getId()));
 
-        assertEquals(Status.NEW, taskManager.getEpicById(epic1.getId()).get().getStatus(),"Статус Эпик не верный");
+        assertEquals(Status.NEW, taskManager.getEpicById(epic1.getId()).get().getStatus(), "Статус Эпик не верный");
 
         taskManager.updateSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", subtask1.getId(), Status.IN_PROGRESS));
         taskManager.updateSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", subtask2.getId(), Status.IN_PROGRESS));
         taskManager.updateSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", subtask3.getId(), Status.DONE));
-        assertEquals(Status.IN_PROGRESS, taskManager.getEpicById(epic1.getId()).get().getStatus(),"Статус Эпик не верный");
+        assertEquals(Status.IN_PROGRESS, taskManager.getEpicById(epic1.getId()).get().getStatus(), "Статус Эпик не верный");
 
         taskManager.updateSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", subtask1.getId(), Status.DONE));
         taskManager.updateSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", subtask2.getId(), Status.DONE));
-        assertEquals(Status.DONE, taskManager.getEpicById(epic1.getId()).get().getStatus(),"Статус Эпик не верный");
+        assertEquals(Status.DONE, taskManager.getEpicById(epic1.getId()).get().getStatus(), "Статус Эпик не верный");
     }
 
     // тесты getHistory

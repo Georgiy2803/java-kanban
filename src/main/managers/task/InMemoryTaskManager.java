@@ -137,34 +137,39 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
     @Override
-    public Task updateTask(Task inputTask) {
+    public void updateTask(Task inputTask) {
+        if (taskMap.get(inputTask.getId()) == null) { // если объекта не существует, производим выход
+            return;
+        }
         int oldId = inputTask.getId();
         taskMap.put(oldId, inputTask);
-        return inputTask;
     }
 
     @Override
-    public Epic updateEpic(Epic inputEpic) {
+    public void updateEpic(Epic inputEpic) {
+        if (epicMap.get(inputEpic.getId()) == null) { // если объекта не существует, производим выход
+            return;
+        }
         int oldId = inputEpic.getId();
         Epic oldEpic = epicMap.get(oldId); // находим старый Эпик в мапе
-        //inputEpic.setListSubtaskIds(oldEpic.getListSubtaskIds()); // вносим в новый Эпик listSubtaskIds старого (изменяемого)
-        for (int subtaskId: oldEpic.getListSubtaskIds()  ) {
+        for (int subtaskId : oldEpic.getListSubtaskIds()) {
             inputEpic.addSubtaskId(subtaskId);
         }
         inputEpic.setStatus(oldEpic.getStatus()); // вносим в новый Эпик Status старого (изменяемого)
         epicMap.put(oldId, inputEpic); // Сохраняем обновлённый Эпик
-        return inputEpic;
     }
 
 
     @Override
-    public Subtask updateSubtask(Subtask inputSubtask) {
+    public void updateSubtask(Subtask inputSubtask) {
+        if (subtaskMap.get(inputSubtask.getId()) == null) { // если объекта не существует, производим выход
+            return;
+        }
         int oldId = inputSubtask.getId();
         Subtask oldSubtask = subtaskMap.get(oldId); // находим старый Subtask в мапе
         inputSubtask.setEpicId(oldSubtask.getEpicId()); // вносим новый Subtask epicId старого (изменяемого)
         subtaskMap.put(oldId, inputSubtask);
         updateEpicStatus(oldSubtask.getEpicId()); // Обновление статуса Эпика
-        return inputSubtask;
     }
 
     // Обновление статуса Эпика
@@ -191,22 +196,34 @@ public class InMemoryTaskManager implements TaskManager {
     // 2f. Удаление по идентификатору.
     @Override
     public void deleteByIdTask(int id) {
+        if (taskMap.get(id) == null) { // если объекта не существует, производим выход
+            return;
+        }
+        historyManager.remove(taskMap.get(id).getId());
         taskMap.remove(id);
     }
 
     @Override
     public void deleteByIdEpic(int id) {
+        if (epicMap.get(id) == null) { // если объекта не существует, производим выход
+            return;
+        }
         Epic Epic = epicMap.get(id); // находим Эпик в мапе
         if (!Epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список где хранятся Подзадачи
             for (Integer idSubtask : Epic.getListSubtaskIds()) {
                 subtaskMap.remove(idSubtask);
+                historyManager.remove(idSubtask);
             }
         }
+        historyManager.remove(epicMap.get(id).getId());
         epicMap.remove(id);
     }
 
     @Override
     public void deleteByIdSubtask(int id) {
+        if (subtaskMap.get(id) == null) { // если объекта не существует, производим выход
+            return;
+        }
         int idEpic = subtaskMap.get(id).getEpicId(); // получаем id Epic к которому привязан Subtask
         Epic epic = epicMap.get(idEpic); // находим Эпик в мапе
         for (int i = 0; i < epic.getListSubtaskIds().size(); i++) {
@@ -214,6 +231,7 @@ public class InMemoryTaskManager implements TaskManager {
                 epic.getListSubtaskIds().remove(i); // удаляем id подзадачи
             }
         }
+        historyManager.remove(subtaskMap.get(id).getId());
         subtaskMap.remove(id); // удаляем Подзадачу
         updateEpicStatus(idEpic); // обновляем Эпик
     }

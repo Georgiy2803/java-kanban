@@ -26,6 +26,13 @@ public class Task implements Cloneable  {
         this.id = id;
     }
 
+    public Task(Task original) { // Конструктор для создания копии объекта
+        this.name = original.name;
+        this.description = original.description;
+        this.id = original.id;
+        this.status = original.status;
+    }
+
 
     public String getName() {
         return name;
@@ -70,6 +77,29 @@ public class Task implements Cloneable  {
     public Object clone() throws CloneNotSupportedException { // для создании копии объекта в InMemoryHistoryManager
         return super.clone();
     }
+
+    /*@Override
+    public Task clone() throws CloneNotSupportedException {
+        Task clonedTask = (Task) super.clone();
+        // Копируем специфические поля класса Task
+        clonedTask.setName(this.getName());
+        clonedTask.setDescription(this.getDescription());
+        // копирование других полей
+        return clonedTask;
+    }*/
+
+
+    /*@Override
+    public Task clone() throws CloneNotSupportedException {
+        Task clonedTask = (Task) super.clone();
+        clonedTask.name = this.name;
+        clonedTask.description = this.description;
+        clonedTask.id = this.id;
+        clonedTask.status = this.status;
+        return clonedTask;
+    }*/
+
+
 
     @Override
     public String toString() {

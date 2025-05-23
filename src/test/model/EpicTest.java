@@ -17,11 +17,12 @@ public class EpicTest {
         assertTrue(epic1.equals(epic2));
     }
 
-    @Test // IsNotEqual
-    public void addIdSubtask_dontAdd_sameIdAsEpic() { // Нельзя добавить id Эпика к себе в подзадачи
+    @Test
+    // addSubtaskId_selfId_notAdded - вариант от Яндекс GPT
+    public void add_IdSubtaskDontAdd_sameIdAsEpic() { // Нельзя добавить id Эпика к себе в подзадачи
         Epic epic = new Epic("name", "description", 1);
-        epic.addSubtaskId(1);
-        assertTrue(epic.getListSubtaskIds().isEmpty());
+        epic.addSubtaskId(1); // пытаемся добавить свой id к себе в подзадачи
+        assertTrue(epic.getListSubtaskIds().isEmpty()); // убеждаемся, что этого не произошло
     }
 
 }

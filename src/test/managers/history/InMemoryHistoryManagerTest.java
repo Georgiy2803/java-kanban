@@ -1,9 +1,5 @@
 package managers.history;
 
-import managers.Managers;
-import managers.history.HistoryManager;
-import managers.task.InMemoryTaskManager;
-import managers.task.TaskManager;
 import model.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,44 +7,61 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
-import java.util.ArrayList;
-
-import static managers.history.InMemoryHistoryManager.HISTORY_MAX_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 
 class InMemoryHistoryManagerTest {
     InMemoryHistoryManager history;
 
     @BeforeEach
-    public void init(){
+    public void init() {
         history = new InMemoryHistoryManager();
     }
 
 
     @Test
-    void add_deleteFirst_addedMoreThen_MAX_SIZE() { // отражение последних задач при просмотре
-        int addSize = 15; // количество добавляемых задач для итерации
-        for (int i = 1; i <= addSize; i++) {
-            history.add(new Task("Название задачи: " + i, "Описание задачи: " + i));
+        // add_verifySizeAndLastTask - вариант названия теста от Яндекс GPT
+    void add_comparNumberOfTaskInList() { // в списке столько же задач, сколько мы в него добавили
+        int addNumberOfTask = 30; // количество добавляемых задач для итерации
+        for (int i = 1; i <= addNumberOfTask; i++) {
+            history.add(new Task("Название задачи: " + i, "Описание задачи: " + i, i));
         }
         // Проверяем, что размер истории соответствует ожидаемому
-        assertEquals(HISTORY_MAX_SIZE, history.getHistory().size(),
+        assertEquals(addNumberOfTask, history.getHistory().size(),
                 "Не совпадает ограничение и размер таблицы");
         // Проверяем, что последняя просмотренная задача, так же последняя в списке истории просмотров
-        assertEquals("Название задачи: " + addSize, history.getHistory().get(HISTORY_MAX_SIZE - 1).getName(),
+        assertEquals("Название задачи: " + addNumberOfTask, history.getHistory().get(addNumberOfTask - 1).getName(),
                 "Не совпадают последние задачи");
+    }
+
+    @Test
+      // addAndRemove_verifySize - вариант от Яндекс GPT
+    void delete_comparNumberOfTaskInList() { // в списке столько же задач, сколько мы в него добавили, а потом удалили
+        int addNumberOfTask = 30; // количество добавляемых задач для итерации
+        for (int i = 1; i <= addNumberOfTask; i++) {
+            history.add(new Task("Название задачи: " + i, "Описание задачи: " + i, i));
+        }
+        int deleteNumberOfTask = 10;
+        for (int i = 1; i <= deleteNumberOfTask; i++) {
+            history.remove(i);
+        }
+        // Проверяем, что размер истории соответствует ожидаемому
+        assertEquals(addNumberOfTask - deleteNumberOfTask, history.getHistory().size(),
+                "Не совпадает ограничение и размер таблицы");
     }
 
     @Test
     void add_saveHistoryIsNotEqual_UpdateTask() { // добавляемые задачи в HistoryManager, сохраняют предыдущую версию задачи и её данных.
         Task task = new Task("Имя 1", "Описание 1"); // создаём задачу
         history.add(task); // добавляет запрос в историю просмотров
+        System.out.println(history.getHistory().get(0));
         //  обновляем поля задачи
         task.setName("Имя 2");
         task.setDescription("Описание 2");
         task.setId(2);
         task.setStatus(Status.IN_PROGRESS);
+        System.out.println(history.getHistory().get(0));
 
         assertNotEquals(task, history.getHistory().get(0), "Task одинаковые");
         assertNotEquals(task.getName(), history.getHistory().get(0).getName());
@@ -75,8 +88,8 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void add_saveHistoryIsNotEqual_UpdateSubtask() {
-        Subtask subtask = new Subtask("Имя 1", "Описание 1",1); // создаём задачу
+    void add_saveHistoryIsNotEqual_UpdateSubtask() { // при изменении задачи, она должна оставаться неизменной в Истории просмотров
+        Subtask subtask = new Subtask("Имя 1", "Описание 1", 1); // создаём задачу
         history.add(subtask); // добавляет запрос в историю просмотров
         //  обновляем поля задачи
         subtask.setName("Имя 2");
@@ -84,6 +97,7 @@ class InMemoryHistoryManagerTest {
         subtask.setId(2);
         subtask.setStatus(Status.IN_PROGRESS);
 
+        System.out.println(subtask + " , " + history.getHistory().get(0));
         assertNotEquals(subtask, history.getHistory().get(0), "Subtask одинаковые");
         assertNotEquals(subtask.getName(), history.getHistory().get(0).getName());
         assertNotEquals(subtask.getDescription(), history.getHistory().get(0).getDescription());
@@ -112,6 +126,7 @@ class InMemoryHistoryManagerTest {
         assertEquals("Описание 1", history.getHistory().get(0).getDescription());
         assertEquals(Status.NEW, history.getHistory().get(0).getStatus());
     }
+
     // точно также как у Эпик
     @Test
     void add_saveAllFields_addedSubtask() {
