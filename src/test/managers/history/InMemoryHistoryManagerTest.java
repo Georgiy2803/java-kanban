@@ -21,6 +21,47 @@ class InMemoryHistoryManagerTest {
 
 
     @Test
+    void test1() { // проверяем, что при повторном добавлении существующей задачи она перемещается в конец списка
+        Task task1 = new Task("Имя 1", "Описание 1",1); // создаём задачу
+        Task task2 = new Task("Имя 2", "Описание 2",2); // создаём задачу
+        Task task3 = new Task("Имя 1", "Описание 1",1); // создаём задачу
+        history.add(task1); // добавляет запрос в историю просмотров
+        history.add(task2); // добавляет запрос в историю просмотров
+        history.add(task3); // добавляет запрос в историю просмотров
+        // проверяем, что при повторном добавлении существующей задачи она перемещается в конец списка.
+        assertEquals(task1, history.getHistory().get(1), "Task не одинаковые");
+    }
+
+    /*
+    Пожалуйста, добавьте тесты для удаления первого, последнего и среднего элементов, удаления несуществующего
+    идентификатора, удаления из пустой истории и последовательного удаления всех элементов для проверки состояния истории.
+     */
+    @Test
+    void test2() {
+        Task task1 = new Task("Имя 1", "Описание 1",1); // создаём задачу
+        Task task2 = new Task("Имя 2", "Описание 2",2); // создаём задачу
+        Task task3 = new Task("Имя 3", "Описание 3",3); // создаём задачу
+        Task task4 = new Task("Имя 4", "Описание 4",4); // создаём задачу
+        history.add(task1); // добавляет запрос в историю просмотров
+        history.add(task2); // добавляет запрос в историю просмотров
+        history.add(task3); // добавляет запрос в историю просмотров
+        history.add(task4); // добавляет запрос в историю просмотров
+
+        // проверка удаления среднего элемента
+        history.remove(2);
+        assertEquals(3, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+        // проверка удаления первого элемента
+        history.remove(1);
+        assertEquals(2, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+        // проверка удаления первого элемента
+        history.remove(4);
+        assertEquals(1, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+        // проверка удаления единственного элемента
+        history.remove(3);
+        assertEquals(0, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+    }
+
+    @Test
         // add_verifySizeAndLastTask - вариант названия теста от Яндекс GPT
     void add_comparNumberOfTaskInList() { // в списке столько же задач, сколько мы в него добавили
         int addNumberOfTask = 30; // количество добавляемых задач для итерации
@@ -55,13 +96,11 @@ class InMemoryHistoryManagerTest {
     void add_saveHistoryIsNotEqual_UpdateTask() { // добавляемые задачи в HistoryManager, сохраняют предыдущую версию задачи и её данных.
         Task task = new Task("Имя 1", "Описание 1"); // создаём задачу
         history.add(task); // добавляет запрос в историю просмотров
-        System.out.println(history.getHistory().get(0));
         //  обновляем поля задачи
         task.setName("Имя 2");
         task.setDescription("Описание 2");
         task.setId(2);
         task.setStatus(Status.IN_PROGRESS);
-        System.out.println(history.getHistory().get(0));
 
         assertNotEquals(task, history.getHistory().get(0), "Task одинаковые");
         assertNotEquals(task.getName(), history.getHistory().get(0).getName());

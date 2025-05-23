@@ -66,23 +66,23 @@ public class InMemoryHistoryManager implements HistoryManager { // Реализ�
     а интерфейс требует в этом же ФЗ другое название (remove).
     Я могу выбрать один вариант? */
     public void removeNode(int id) {
-        if (!nodeMap.containsKey(id)) { // проверяем, если такой id есть в таблице
-            return;
+        if (nodeMap.containsKey(id)) { // проверяем, если такой id есть в таблице
+            Node<Task> nodeId = nodeMap.remove(id); // удалили из map и получили узел
+            if (nodeId.prev == null && nodeId.next == null) {
+                head = null; // Суть этой строки, что она удаляет оставшийся единственный узел.
+            } else if (nodeId.prev == null) { // удаляем первый элемент
+                head = nodeId.next;
+                nodeId.next.prev = null;
+            } else if (nodeId.next == null) { // удаляем последний элемент
+                nodeId.prev.next = null;
+            } else { // удаляем средний элемент
+                nodeId.next.prev = nodeId.prev;
+                nodeId.prev.next = nodeId.next;
+            }
+            size--; // Уменьшаем размер списка на один
         }
-        Node<Task> nodeId = nodeMap.get(id);
-        if (nodeId.prev == null && nodeId.next == null) {
-            head = null;
-        } else if (nodeId.prev == null) {
-            head = nodeId.next;
-            nodeId.next.prev = null;
-        } else if (nodeId.next == null) {
-            nodeId.prev.next = null;
-        } else {
-            nodeId.next.prev = nodeId.prev;
-            nodeId.prev.next = nodeId.next;
-        }
-        size--; // Уменьшаем размер списка на один
     }
+
 }
 
 // Помню, что документированный текс не допускается, но пока он мне нужен как набор реализованных решений.

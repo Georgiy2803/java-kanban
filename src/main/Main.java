@@ -53,6 +53,7 @@ public class Main {
         manager.getTaskById(2);
 
         manager.deleteByIdTask(1); // Удаляем задачу
+        manager.deleteByIdTask(1); // Удаляем задачу
 
 
         manager.deleteByIdEpic(3); // Удаляем Эпик
