@@ -7,6 +7,8 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -21,7 +23,7 @@ class InMemoryHistoryManagerTest {
 
 
     @Test
-    void test1() { // проверяем, что при повторном добавлении существующей задачи она перемещается в конец списка
+    void add_addReplay_movLastList() { // проверяем, что при повторном добавлении существующей задачи она перемещается в конец списка
         Task task1 = new Task("Имя 1", "Описание 1",1); // создаём задачу
         Task task2 = new Task("Имя 2", "Описание 2",2); // создаём задачу
         Task task3 = new Task("Имя 1", "Описание 1",1); // создаём задачу
@@ -37,7 +39,7 @@ class InMemoryHistoryManagerTest {
     идентификатора, удаления из пустой истории и последовательного удаления всех элементов для проверки состояния истории.
      */
     @Test
-    void test2() {
+    void remove_firstLastMiddleAndAllElements() {
         Task task1 = new Task("Имя 1", "Описание 1",1); // создаём задачу
         Task task2 = new Task("Имя 2", "Описание 2",2); // создаём задачу
         Task task3 = new Task("Имя 3", "Описание 3",3); // создаём задачу
@@ -59,6 +61,14 @@ class InMemoryHistoryManagerTest {
         // проверка удаления единственного элемента
         history.remove(3);
         assertEquals(0, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+        history.remove(2); // проверка удаления несуществующего идентификатора
+        assertEquals(0, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+    }
+
+    @Test
+    void getHistory_whenEmpty_returnsEmptyList() {
+        List<Task> historyList = history.getHistory();
+        assertEquals(0, historyList.size(), "История должна быть пустой, если она пуста или все задачи удалены");
     }
 
     @Test
