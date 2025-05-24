@@ -6,8 +6,6 @@ import java.util.*;
 public class InMemoryHistoryManager implements HistoryManager { // Реализация истории просмотров в памяти
     // 6-ой спринт. Собственная реализация двух-связного списка задач (аналог LinkedHashMap) с методами linkLast.
     private HashMap<Integer, Node<Task>> nodeMap = new HashMap<>(); // создаём таблицу для узлов
-
-    private Node<Task> head; // Указатель на первый элемент списка.
     private Node<Task> tail; // Указатель на последний элемент списка.
 
     @Override
@@ -34,18 +32,23 @@ public class InMemoryHistoryManager implements HistoryManager { // Реализ�
     @Override
     public void remove(int id) {
         if (nodeMap.containsKey(id)) { // проверяем, если такой id есть в таблице
-            Node<Task> nodeId = nodeMap.remove(id); // удалили из map и получили узел
-            if (nodeId.prev == null && nodeId.next == null) {
-                tail = null; // Суть этой строки, что она удаляет оставшийся единственный узел.
-            } else if (nodeId.prev == null) { // удаляем первый элемент
-                nodeId.next.prev = null;
-            } else if (nodeId.next == null) { // удаляем последний элемент
-                nodeId.prev.next = null;
-                tail= nodeId.prev; // теперь этот узел становиться последним
-            } else { // удаляем средний элемент
-                nodeId.next.prev = nodeId.prev;
-                nodeId.prev.next = nodeId.next;
-            }
+            Node<Task> nodeId = nodeMap.get(id); // находим элемент в Map
+            unlinkNode(nodeId); // Вызываем метод для отлинковки узла
+            nodeMap.remove(id); // Удаляем узел из Map
+        }
+    }
+
+    private void unlinkNode(Node<Task> node) {
+        if (node.prev == null && node.next == null) {
+            tail = null; // Удаляем единственный оставшийся узел
+        } else if (node.prev == null) { // Удаляем первый элемент
+            node.next.prev = null;
+        } else if (node.next == null) { // Удаляем последний элемент
+            node.prev.next = null;
+            tail = node.prev; // Теперь этот узел становится последним
+        } else { // Удаляем средний элемент
+            node.next.prev = node.prev;
+            node.prev.next = node.next;
         }
     }
 

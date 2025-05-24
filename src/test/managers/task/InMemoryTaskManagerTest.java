@@ -1,5 +1,6 @@
 package managers.task;
 
+import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import model.Epic;
 import model.Status;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class InMemoryTaskManagerTest {
 
     TaskManager taskManager;
+
 
     @BeforeEach
     public void init() {
@@ -50,7 +52,6 @@ public class InMemoryTaskManagerTest {
         taskManager.deleteAllTasks();
         assertEquals(0, taskManager.getTasks().size(), "В списке не верное количество задач");
     }
-
 
     // Тесты Epic
 
@@ -197,4 +198,59 @@ public class InMemoryTaskManagerTest {
         assertEquals("Описание подзадачи 1", taskManager.getHistory().get(0).getDescription());
         assertEquals(Status.NEW, taskManager.getHistory().get(0).getStatus());
     }
+
+    @Test
+    void remove_deleteAllTasks_removeAllTasksInHistory () {
+        taskManager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
+        taskManager.createTask(new Task("Имя 2", "Описание 2")); // создаём задачу
+        taskManager.createTask(new Task("Имя 3", "Описание 3")); // создаём задачу
+        taskManager.getTaskById(1); // добавляет запрос в историю просмотров
+        taskManager.getTaskById(2); // добавляет запрос в историю просмотров
+        taskManager.getTaskById(3); // добавляет запрос в историю просмотров
+
+        assertEquals(3, taskManager.getHistory().size(), "Размер Истории просмотров не соответствует");
+        taskManager.deleteAllTasks();
+        assertEquals(0, taskManager.getHistory().size(), "Истории просмотров не пустая");
+    }
+
+    @Test
+    void remove_deleteAllEpic_removeAllEpicAndSubtaskInHistory () {
+        Epic epic1 = taskManager.createEpic(new Epic("Эпик 1", "Описание Эпик1"));
+        Epic epic2 = taskManager.createEpic(new Epic("Эпик 2", "Описание Эпик2"));
+        Epic epic3 = taskManager.createEpic(new Epic("Эпик 3", "Описание Эпик2"));
+        Subtask subtask1 = taskManager.createSubtask(new Subtask("Подзадача 1", "для Эпик 1", epic1.getId()));
+        Subtask subtask2 = taskManager.createSubtask(new Subtask("Подзадача 2", " для Эпик 2", epic2.getId()));
+        Subtask subtask3 = taskManager.createSubtask(new Subtask("Подзадача 3", " для Эпик 3", epic3.getId()));
+        taskManager.getEpicById(1); // добавляет запрос в историю просмотров
+        taskManager.getEpicById(2); // добавляет запрос в историю просмотров
+        taskManager.getEpicById(3); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(4); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(5); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(6); // добавляет запрос в историю просмотров
+
+        assertEquals(6, taskManager.getHistory().size(), "Размер Истории просмотров не соответствует");
+        taskManager.deleteAllEpic();
+        assertEquals(0, taskManager.getHistory().size(), "Истории просмотров не пустая");
+    }
+
+    @Test
+    void remove_deleteAllSubtask_removeAllSubtaskInHistory () {
+        Epic epic1 = taskManager.createEpic(new Epic("Эпик 1", "Описание Эпик1"));
+        Epic epic2 = taskManager.createEpic(new Epic("Эпик 2", "Описание Эпик2"));
+        Epic epic3 = taskManager.createEpic(new Epic("Эпик 3", "Описание Эпик2"));
+        Subtask subtask1 = taskManager.createSubtask(new Subtask("Подзадача 1", "для Эпик 1", epic1.getId()));
+        Subtask subtask2 = taskManager.createSubtask(new Subtask("Подзадача 2", " для Эпик 2", epic2.getId()));
+        Subtask subtask3 = taskManager.createSubtask(new Subtask("Подзадача 3", " для Эпик 3", epic3.getId()));
+        taskManager.getEpicById(1); // добавляет запрос в историю просмотров
+        taskManager.getEpicById(2); // добавляет запрос в историю просмотров
+        taskManager.getEpicById(3); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(4); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(5); // добавляет запрос в историю просмотров
+        taskManager.getSubtaskById(6); // добавляет запрос в историю просмотров
+
+        assertEquals(6, taskManager.getHistory().size(), "Размер Истории просмотров не соответствует");
+        taskManager.deleteAllSubtask();
+        assertEquals(3, taskManager.getHistory().size(), "Истории просмотров не пустая");
+    }
+
 }

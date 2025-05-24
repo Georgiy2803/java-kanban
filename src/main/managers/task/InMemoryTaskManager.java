@@ -51,17 +51,35 @@ public class InMemoryTaskManager implements TaskManager {
     // 2b. Удаление всех задач.
     @Override
     public void deleteAllTasks() { // удаление всех Task
+        for(Task task: taskMap.values()) {
+            historyManager.remove(task.getId());
+        }
         taskMap.clear();
+
     }
 
     @Override
     public void deleteAllEpic() { // удаление всех Epic и связанных с ними Subtask
+        for(Epic epic: epicMap.values()) {
+            if (!epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список где хранятся Подзадачи
+                for (Integer idSubtask : epic.getListSubtaskIds()) {
+                    subtaskMap.remove(idSubtask);
+                    historyManager.remove(idSubtask);
+                }
+            }
+            historyManager.remove(epic.getId());
+        }
         epicMap.clear();
-        subtaskMap.clear();
     }
+
+
+
 
     @Override
     public void deleteAllSubtask() { // Удаление всех Subtask. Очистка списков у Эпиков и обновление их статуса
+        for(Subtask subtask: subtaskMap.values()) {
+            historyManager.remove(subtask.getId());
+        }
         for (Subtask subtask : getSubtask()) {
             int idEpic = subtask.getEpicId(); // получаем id Epic к которому привязаны
             Epic epic = epicMap.get(idEpic); // находим Эпик в мапе

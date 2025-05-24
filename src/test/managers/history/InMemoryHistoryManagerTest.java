@@ -21,7 +21,6 @@ class InMemoryHistoryManagerTest {
         history = new InMemoryHistoryManager();
     }
 
-
     @Test
     void add_addReplay_movLastList() { // проверяем, что при повторном добавлении существующей задачи она перемещается в конец списка
         Task task1 = new Task("Имя 1", "Описание 1",1); // создаём задачу
