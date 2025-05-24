@@ -1,4 +1,5 @@
 package managers;
+
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import managers.task.InMemoryTaskManager;
@@ -9,6 +10,7 @@ public class Managers {
     public static TaskManager getDefault() {
         return new InMemoryTaskManager(getDefaultHistory());
     }
+
     //  Статический метод getDefaultHistory, который возвращает объект InMemoryHistoryManager — историю просмотров.
     public static HistoryManager getDefaultHistory() { // создаёт экземпляр InMemoryHistoryManager, который реализует интерфейс HistoryManager.
         // каждый раз, когда мы запрашиваем менеджер истории, создаётся новый экземпляр класса InMemoryHistoryManager
