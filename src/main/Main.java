@@ -7,10 +7,6 @@ import model.Subtask;
 import model.Status;
 
 
-//  Александр, вопрос. А разве в данном проект main не для меня, как инструмент проверить и понять как работает код?
-// Его обязательно содержать чистим перед сдачей на проверку?
-// Просто я в нём постоянно, что-то экспериментирую и для этого мне нужен весь закомментированный код.
-
 public class Main {
     public static void main(String[] args) {
 
@@ -43,13 +39,6 @@ public class Main {
         manager.getSubtaskById(8);
         manager.getTaskById(1);
         manager.getTaskById(2);
-
-        /*manager.deleteTaskById(1); // Удаляем задачу
-        manager.deleteTaskById(1); // Удаляем задачу
-
-
-        manager.deleteEpicById(3); // Удаляем Эпик
-        manager.deleteSubtaskById(6); // Удаляем Подзадачу*/
 
 
         System.out.println(manager.getTasks());
@@ -94,9 +83,9 @@ public class Main {
 
         System.out.println("4 вывод");
 
-       // manager.deleteAllTasks();
-       // manager.deleteAllEpic();
-        //manager.deleteAllSubtask();
+        manager.deleteAllTasks();
+        manager.deleteAllEpic();
+        manager.deleteAllSubtask();
 
 
         System.out.println(manager.getTasks());

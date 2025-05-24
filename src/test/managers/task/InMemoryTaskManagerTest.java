@@ -252,5 +252,4 @@ public class InMemoryTaskManagerTest {
         taskManager.deleteAllSubtask();
         assertEquals(3, taskManager.getHistory().size(), "Истории просмотров не пустая");
     }
-
 }
