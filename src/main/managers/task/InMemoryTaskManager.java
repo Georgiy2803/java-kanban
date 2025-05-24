@@ -3,8 +3,6 @@ package managers.task;
 import java.util.*;
 
 import managers.history.HistoryManager;
-import managers.Managers;
-import managers.history.InMemoryHistoryManager;
 import model.Task;
 import model.Epic;
 import model.Subtask;
@@ -195,7 +193,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2f. Удаление по идентификатору.
     @Override
-    public void deleteByIdTask(int id) {
+    public void deleteTaskById(int id) { // deleteTaskById
         if (taskMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }
@@ -204,7 +202,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteByIdEpic(int id) {
+    public void deleteEpicById (int id) { // deleteEpicById
         if (epicMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }
@@ -220,7 +218,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteByIdSubtask(int id) {
+    public void deleteSubtaskById(int id) { // deleteSubtaskById
         if (subtaskMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }

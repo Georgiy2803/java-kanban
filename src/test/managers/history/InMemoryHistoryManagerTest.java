@@ -34,6 +34,7 @@ class InMemoryHistoryManagerTest {
         assertEquals(task1, history.getHistory().get(1), "Task не одинаковые");
     }
 
+
     /*
     Пожалуйста, добавьте тесты для удаления первого, последнего и среднего элементов, удаления несуществующего
     идентификатора, удаления из пустой истории и последовательного удаления всех элементов для проверки состояния истории.
@@ -49,18 +50,19 @@ class InMemoryHistoryManagerTest {
         history.add(task3); // добавляет запрос в историю просмотров
         history.add(task4); // добавляет запрос в историю просмотров
 
-        // проверка удаления среднего элемента
-        history.remove(2);
+
+        history.remove(2); // проверка удаления среднего элемента
         assertEquals(3, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
-        // проверка удаления первого элемента
-        history.remove(1);
+
+        history.remove(1); // проверка удаления первого элемента
         assertEquals(2, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
-        // проверка удаления первого элемента
-        history.remove(4);
+
+        history.remove(4); // проверка удаления последнего элемента
         assertEquals(1, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
-        // проверка удаления единственного элемента
-        history.remove(3);
+
+        history.remove(3); // проверка удаления единственного элемента
         assertEquals(0, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
+
         history.remove(2); // проверка удаления несуществующего идентификатора
         assertEquals(0, history.getHistory().size(), "размер Истории не соответствует ожидаемому");
     }
@@ -146,7 +148,6 @@ class InMemoryHistoryManagerTest {
         subtask.setId(2);
         subtask.setStatus(Status.IN_PROGRESS);
 
-        System.out.println(subtask + " , " + history.getHistory().get(0));
         assertNotEquals(subtask, history.getHistory().get(0), "Subtask одинаковые");
         assertNotEquals(subtask.getName(), history.getHistory().get(0).getName());
         assertNotEquals(subtask.getDescription(), history.getHistory().get(0).getDescription());

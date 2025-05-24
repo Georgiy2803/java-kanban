@@ -1,7 +1,5 @@
 package managers.task;
 
-import managers.Managers;
-import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import model.Epic;
 import model.Status;
@@ -47,7 +45,7 @@ public class InMemoryTaskManagerTest {
         taskManager.createTask(new Task("Название задачи3", "Описание задачи3"));
         // проверка, что задачи удаляются в списке менеджера
         assertEquals(3, taskManager.getTasks().size(), "В списке не верное количество задач");
-        taskManager.deleteByIdTask(task1.getId());
+        taskManager.deleteTaskById(task1.getId());
         assertEquals(2, taskManager.getTasks().size(), "В списке не верное количество задач");
         taskManager.deleteAllTasks();
         assertEquals(0, taskManager.getTasks().size(), "В списке не верное количество задач");
@@ -84,7 +82,7 @@ public class InMemoryTaskManagerTest {
         taskManager.createSubtask(new Subtask("Название подзадачи3", "Описание подзадачи1", epic2.getId()));
 
         assertEquals(3, taskManager.getEpics().size(), "В списке не верное количество Эпик");
-        taskManager.deleteByIdEpic(epic1.getId());
+        taskManager.deleteEpicById(epic1.getId());
         assertEquals(2, taskManager.getEpics().size(), "В списке не верное количество Эпик");
         assertEquals(2, taskManager.getSubtask().size(), "В списке не верное количество подзадач");
         taskManager.deleteAllEpic();
@@ -125,7 +123,7 @@ public class InMemoryTaskManagerTest {
         // Проверяем, что у Эпик список подзадач равен 1
         assertEquals(1, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик");
 
-        taskManager.deleteByIdSubtask(subtask1.getId()); // удаляем единственную подзадачу
+        taskManager.deleteSubtaskById(subtask1.getId()); // удаляем единственную подзадачу
         assertEquals(2, taskManager.getSubtask().size(), "Не верное количество подзадач всего");
         assertEquals(0, taskManager.getEpicById(epic1.getId()).get().getListSubtaskIds().size(), "Не верное количество подзадач у Эпик1");
 

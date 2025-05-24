@@ -1,8 +1,5 @@
 
 import managers.Managers;
-import managers.history.HistoryManager;
-import managers.history.InMemoryHistoryManager;
-import managers.task.InMemoryTaskManager;
 import managers.task.TaskManager;
 import model.Task;
 import model.Epic;
@@ -52,12 +49,12 @@ public class Main {
         manager.getTaskById(1);
         manager.getTaskById(2);
 
-        manager.deleteByIdTask(1); // Удаляем задачу
-        manager.deleteByIdTask(1); // Удаляем задачу
+        manager.deleteTaskById(1); // Удаляем задачу
+        manager.deleteTaskById(1); // Удаляем задачу
 
 
-        manager.deleteByIdEpic(3); // Удаляем Эпик
-        manager.deleteByIdSubtask(6); // Удаляем Подзадачу*/
+        manager.deleteEpicById(3); // Удаляем Эпик
+        manager.deleteSubtaskById(6); // Удаляем Подзадачу*/
 
         //  System.out.println(manager.getIdHistory);
         System.out.println(manager.getTasks());

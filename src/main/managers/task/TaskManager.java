@@ -45,11 +45,11 @@ public interface TaskManager {
     void updateSubtask(Subtask inputSubtask);
 
     // 2f. Удаление по идентификатору.
-    void deleteByIdTask(int id);
+    void deleteTaskById(int id);
 
-    void deleteByIdEpic(int id);
+    void deleteEpicById(int id);
 
-    void deleteByIdSubtask(int id);
+    void deleteSubtaskById(int id);
 
     //3. Дополнительные методы: a. Получение списка всех подзадач определённого эпика. - скорее всего.
     ArrayList<Subtask> listOfEpicSubtasks(int idEpic);
