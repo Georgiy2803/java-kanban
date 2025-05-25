@@ -26,6 +26,13 @@ public class Task implements Cloneable  {
         this.id = id;
     }
 
+    public Task(Task original) { // Конструктор для создания копии объекта
+        this.name = original.name;
+        this.description = original.description;
+        this.id = original.id;
+        this.status = original.status;
+    }
+
 
     public String getName() {
         return name;
