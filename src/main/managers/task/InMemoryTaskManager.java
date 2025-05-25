@@ -153,18 +153,19 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
     @Override
-    public void updateTask(Task inputTask) {
+    public Optional<Task> updateTask (Task inputTask) {
         if (taskMap.get(inputTask.getId()) == null) { // если объекта не существует, производим выход
-            return;
+            return Optional.empty();
         }
         int oldId = inputTask.getId();
         taskMap.put(oldId, inputTask);
+        return Optional.of(inputTask);
     }
 
     @Override
-    public void updateEpic(Epic inputEpic) {
+    public Optional<Epic> updateEpic(Epic inputEpic) {
         if (epicMap.get(inputEpic.getId()) == null) { // если объекта не существует, производим выход
-            return;
+            return Optional.empty();
         }
         int oldId = inputEpic.getId();
         Epic oldEpic = epicMap.get(oldId); // находим старый Эпик в мапе
@@ -173,19 +174,20 @@ public class InMemoryTaskManager implements TaskManager {
         }
         inputEpic.setStatus(oldEpic.getStatus()); // вносим в новый Эпик Status старого (изменяемого)
         epicMap.put(oldId, inputEpic); // Сохраняем обновлённый Эпик
+        return Optional.of(inputEpic);
     }
 
-
     @Override
-    public void updateSubtask(Subtask inputSubtask) {
+    public Optional<Subtask> updateSubtask (Subtask inputSubtask) {
         if (subtaskMap.get(inputSubtask.getId()) == null) { // если объекта не существует, производим выход
-            return;
+            return Optional.empty();
         }
         int oldId = inputSubtask.getId();
         Subtask oldSubtask = subtaskMap.get(oldId); // находим старый Subtask в мапе
         inputSubtask.setEpicId(oldSubtask.getEpicId()); // вносим новый Subtask epicId старого (изменяемого)
         subtaskMap.put(oldId, inputSubtask);
         updateEpicStatus(oldSubtask.getEpicId()); // Обновление статуса Эпика
+        return Optional.of(inputSubtask);
     }
 
     // Обновление статуса Эпика

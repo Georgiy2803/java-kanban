@@ -68,6 +68,7 @@ public class Main {
         manager.updateSubtask(new Subtask("Купить скотч1", "5 шт. - прозрачного", 6, Status.DONE));
         manager.updateSubtask(new Subtask("Составить план1", "Начертить схему", 7, Status.DONE));
 
+        manager.deleteEpicById(3);
         System.out.println("3 вывод");
         manager.updateEpic(new Epic("Переезд1", "В другой офис1", 3));
 

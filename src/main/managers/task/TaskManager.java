@@ -38,11 +38,11 @@ public interface TaskManager {
     Subtask createSubtask(Subtask inputSubtask);
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
-    void updateTask(Task inputTask);
+    Optional<Task> updateTask (Task inputTask);
 
-    void updateEpic(Epic inputEpic);
+    Optional<Epic> updateEpic (Epic inputEpic);
 
-    void updateSubtask(Subtask inputSubtask);
+    Optional<Subtask> updateSubtask (Subtask inputSubtask);
 
     // 2f. Удаление по идентификатору.
     void deleteTaskById(int id);
