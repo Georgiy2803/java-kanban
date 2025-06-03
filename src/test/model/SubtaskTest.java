@@ -18,17 +18,17 @@ public class SubtaskTest {
     }
 
     @Test
-
-    public void addIdSubtask_dontAdd_addToYourEpic() { // Нельзя Subtask сделать своим Эпик
+    // setId_and_setEpicId_verifyNoChange - вариант от Яндекс GPT
+    public void setId_dontsetIdSubtask_toYourEpic() { // Нельзя Subtask сделать своим Эпик
         Subtask subtask = new Subtask("name", "description", 1);
 
         subtask.setId(2); // устанавливает первоначальный id
-        assertEquals(2,subtask.getId()); // убеждаемся, что id предводился
+        assertEquals(2,subtask.getId()); // убеждаемся, что id присвоился
 
         subtask.setId(1); // устанавливает id равный Эпику
-        assertNotEquals(1,subtask.getId());
+        assertNotEquals(1,subtask.getId()); // убеждаемся, что id НЕ поменялся
 
         subtask.setEpicId(2); // устанавливает привязку к Эпику равной своему id
-        assertNotEquals(2,subtask.getEpicId());
+        assertNotEquals(2,subtask.getEpicId()); // // убеждаемся, что этого не произошло
     }
 }
