@@ -15,6 +15,10 @@ public class Epic extends Task{
         this.status = Status.NEW;
     }
 
+    public Epic(String name, String description, Integer id, Status status) { // Конструктор для записи из файла
+        super(name, description, id, status);
+    }
+
     public ArrayList<Integer> getListSubtaskIds() {
         return listSubtaskIds;
     }
@@ -27,10 +31,6 @@ public class Epic extends Task{
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() +
-                ". name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", id=" + id +
-                ", status=" + status + ", подзадачи: " + listSubtaskIds + " \n";
+        return id + "," + getClass().getSimpleName() + "," + name + "," + status + "," + description;
     }
 }

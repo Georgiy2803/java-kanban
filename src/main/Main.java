@@ -12,6 +12,8 @@ public class Main {
 
         TaskManager manager = Managers.getDefault();
 
+
+
         manager.createTask(new Task("Task 1", "Описание 1"));
         manager.createTask(new Task("Task 2", "Описание 2"));
         manager.createEpic(new Epic("Эпик 1", "3 подзадачи"));
@@ -40,7 +42,7 @@ public class Main {
         manager.getTaskById(1);
         manager.getTaskById(2);
 
-
+        System.out.println(manager.getTaskById(1).get());
         System.out.println(manager.getTasks());
         System.out.println(manager.getEpics());
         System.out.println(manager.getSubtask());
