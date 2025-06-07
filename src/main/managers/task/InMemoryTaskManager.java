@@ -11,6 +11,8 @@ import model.Status;
 
 public class InMemoryTaskManager implements TaskManager {
 
+
+
     private HashMap<Integer, Task> taskMap;
     private HashMap<Integer, Epic> epicMap;
     private HashMap<Integer, Subtask> subtaskMap;
@@ -18,12 +20,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     private HistoryManager historyManager; // стало
 
+    public HashMap<Integer, Task> getTaskMap() {
+        return taskMap;
+    }
+
+    public HashMap<Integer, Epic> getEpicMap() {
+        return epicMap;
+    }
+
+    public HashMap<Integer, Subtask> getSubtaskMap() {
+        return subtaskMap;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
         taskMap = new HashMap<>(); // создали объект
         epicMap = new HashMap<>();
         subtaskMap = new HashMap<>();
     }
+
+
 
     // 5-й спринт
     @Override

@@ -12,7 +12,7 @@ public class Task implements Cloneable  {
         this.status = Status.NEW;
 
     }
-    public Task(String name, String description, Integer id, Status status) { // Конструктор для обновления
+    public Task(String name, String description, Integer id, Status status) { // Конструктор для обновления и записи из файла
         this.name = name;
         this.description = description;
         this.id = id;
@@ -78,12 +78,17 @@ public class Task implements Cloneable  {
         return super.clone();
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return getClass().getSimpleName() +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status + " \n";
+    }*/
+
+    @Override
+    public String toString() {
+        return id + "," + getClass().getSimpleName() + "," + name + "," + status + "," + description;
     }
 }
