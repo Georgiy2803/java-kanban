@@ -13,32 +13,12 @@ public class InMemoryTaskManager implements TaskManager {
 
 
 
-    private HashMap<Integer, Task> taskMap;
-    private HashMap<Integer, Epic> epicMap;
-    private HashMap<Integer, Subtask> subtaskMap;
-    private int id = 0; // поле идентификатора
+    protected HashMap<Integer, Task> taskMap;
+    protected HashMap<Integer, Epic> epicMap;
+    protected HashMap<Integer, Subtask> subtaskMap;
+    protected int id = 0; // поле идентификатора
 
-    private HistoryManager historyManager; // стало
-
-    public HashMap<Integer, Task> getTaskMap() {
-        return taskMap;
-    }
-
-    public HashMap<Integer, Epic> getEpicMap() {
-        return epicMap;
-    }
-
-    public HashMap<Integer, Subtask> getSubtaskMap() {
-        return subtaskMap;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    private HistoryManager historyManager;
 
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -47,8 +27,6 @@ public class InMemoryTaskManager implements TaskManager {
         epicMap = new HashMap<>();
         subtaskMap = new HashMap<>();
     }
-
-
 
     // 5-й спринт
     @Override
@@ -96,9 +74,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epicMap.clear();
     }
-
-
-
 
     @Override
     public void deleteAllSubtask() { // Удаление всех Subtask. Очистка списков у Эпиков и обновление их статуса

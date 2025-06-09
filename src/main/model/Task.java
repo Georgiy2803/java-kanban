@@ -78,17 +78,17 @@ public class Task implements Cloneable  {
         return super.clone();
     }
 
-    /*@Override
+    @Override
     public String toString() {
-        return getClass().getSimpleName() +
+        return " \n" + getClass().getSimpleName() +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
-                ", status=" + status + " \n";
-    }*/
+                ", status=" + status;
+    }
 
-    @Override
-    public String toString() {
-        return id + "," + getClass().getSimpleName() + "," + name + "," + status + "," + description;
+
+    public String toStringForSaving() { // метод сохранения задачи в строку
+        return id + "," + "TASK" + "," + name + "," + status + "," + description;
     }
 }
