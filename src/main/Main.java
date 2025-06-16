@@ -106,7 +106,7 @@ public class Main {
 
 
         System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory() + "\n");
-        System.out.println("Конец \n");
+        System.out.println("Конец \n");*/
 
 
 
@@ -130,9 +130,9 @@ public class Main {
         System.out.println(fileManager.getEpics());
         System.out.println(fileManager.getSubtask());
 
-        fileManager.deleteAllTasks();
+        /*fileManager.deleteAllTasks();
         fileManager.deleteAllEpic();
-        fileManager.deleteAllSubtask();
+        fileManager.deleteAllSubtask();*/
         System.out.println("Очистка \n");
 
         System.out.println(fileManager.getTasks());
@@ -150,7 +150,7 @@ public class Main {
 
         System.out.println(fileManager.getTasks());
         System.out.println(fileManager.getEpics());
-        System.out.println(fileManager.getSubtask());*/
+        System.out.println(fileManager.getSubtask());
 
     }
 }

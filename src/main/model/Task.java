@@ -86,9 +86,4 @@ public class Task implements Cloneable  {
                 ", id=" + id +
                 ", status=" + status;
     }
-
-
-    public String toStringForSaving() { // метод сохранения задачи в строку
-        return id + "," + "TASK" + "," + name + "," + status + "," + description;
-    }
 }

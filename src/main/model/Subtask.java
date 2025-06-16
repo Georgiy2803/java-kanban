@@ -13,11 +13,6 @@ public class Subtask extends Task {
         super(name, description, id, status);
     }
 
-   /* public Subtask(String name, String description, Integer id, Status status, Integer epicId) { // Конструктор для записи из файла
-        super(name, description, id, status);
-        this.epicId = epicId;
-    }*/
-
 
     public int getEpicId() {
         return epicId;
@@ -47,10 +42,4 @@ public class Subtask extends Task {
                 ", status=" + status +
                 ", belong Epic=" + epicId ;
     }
-
-    public String toStringForSaving() { // метод сохранения задачи в строку
-        return id + "," + "SUBTASK" + "," + name + "," + status + "," + description + "," + epicId;
-
-    }
-
 }

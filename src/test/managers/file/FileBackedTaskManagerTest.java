@@ -27,14 +27,13 @@ public class FileBackedTaskManagerTest {
         fileManager = new FileBackedTaskManager(new InMemoryHistoryManager(), new File(fileTest));
     }
 
-
     @Test
-    void creatFile_callMethod_loadFromFile() throws IOException { //Проверяем создаётся ли файл методом loadFromFile
-
+    void creatFile_callMethod_loadFromFile() { //Проверяем создаётся ли файл методом loadFromFile
         String nameFileTest = "fileToSaveTest.CSV";
+
         fileManager.loadFromFile(nameFileTest); // передаём имя файла в метод
 
-        // Проверяем, что файл был создан методом loadFromFile (автоматически создаёт файл, если его нет)
+        // Проверяем, что файл был создан методом loadFromFile
         File file = new File(fileTest);
         if (file.isFile()) {
             System.out.println("Файл обнаружен.");
@@ -53,8 +52,9 @@ public class FileBackedTaskManagerTest {
         }
     }
 
+
     @Test
-    void addTaskToFile_readTaskFromFail() throws IOException {  // Запись задач в файл, и считывание задач из файла.
+    void addTaskToFile_readTaskFromFail()  {  // Запись задач в файл, и считывание задач из файла.
         // Имитируем первый запуск приложения
         fileManager.deleteAllTasks();
         fileManager.deleteAllEpic();
@@ -89,7 +89,7 @@ public class FileBackedTaskManagerTest {
                 lineCount++;
             }
         } catch (IOException e) {
-            System.err.println("Ошибка при чтении файла: " + e.getMessage());
+            throw new RuntimeException("Ошибка при чтении файла: ", e);
         }
 
         assertEquals(8, lineCount, "Задачи или отсутствуют в файле или их количество не совпадает");
@@ -104,7 +104,7 @@ public class FileBackedTaskManagerTest {
                 Files.copy(sourcePath, targetPath);
                 System.out.println("Файл успешно скопирован.");
             } catch (IOException e) {
-                System.out.println("Ошибка при копировании файла: " + e.getMessage());
+                throw new RuntimeException("Ошибка при копировании файла: ", e);
             }
 
         // Удаляем "задачи" в хеш-таблицах, имитируя перезагрузку приложения

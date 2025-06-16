@@ -1,6 +1,8 @@
 package managers.file;
 
 import java.io.File;
+
+import exception.ManagerSaveException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import managers.task.InMemoryTaskManager;
@@ -13,14 +15,16 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private File fileToSave;
 
     // Из тз к 7-ому спринту. Пусть новый менеджер получает файл для автосохранения в своём конструкторе и сохраняет его в поле.
-    public FileBackedTaskManager(HistoryManager historyManager, File file) throws IOException {
+    public FileBackedTaskManager(HistoryManager historyManager, File file)  {
         super(historyManager);
 
         if (!file.exists()) { //  Проверяем, существует ли файл
@@ -29,8 +33,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 file.createNewFile(); // Создаем файл, если его не существует
                 System.out.println("Файл успешно создан классом FileBackedTaskManager.");
             } catch (IOException e) {
-                System.out.println("Ошибка при создании файла.");
-                e.printStackTrace();
+                throw new RuntimeException("Ошибка при создании файла.", e);
             }
         } else {
             System.out.println("файл передан в класс FileBackedTaskManager.");
@@ -44,16 +47,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     Создайте статический метод static FileBackedTaskManager loadFromFile(File file), который будет восстанавливать
      данные менеджера из файла при запуске программы. */
     // Метод принимает имя файла, если такого файла не существует, то создаёт его.
-    public static FileBackedTaskManager loadFromFile(String fileName) throws IOException {
+    public static FileBackedTaskManager loadFromFile(String fileName) {
         File file = new File("src\\main\\managers\\file\\" + fileName);
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(new InMemoryHistoryManager(), file);
 
-        if (!file.exists()) {  //  Проверяем, существует ли файл
+        if (!file.exists()) {  // Проверяем, существует ли файл
             try {
                 file.createNewFile(); // Создаём файл, если его нет
                 System.out.println("файл создан методом loadFromFile.");
             } catch (IOException e) {
-                System.err.println("Ошибка при работе с файлом: " + e.getMessage());
+                // Обрабатываем исключение здесь
+                throw new RuntimeException("Ошибка при создании файла: " + e.getMessage(), e);
             }
         } else {
             System.out.println("файл передан в метод loadFromFile.");
@@ -63,21 +67,29 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileBackedTaskManager;
     }
 
+    private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
+        if (task.getClass().getSimpleName().equals("Subtask")) {
+            Subtask subtask = (Subtask) task;
+            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription() + "," + subtask.getEpicId();
+        } else {
+            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription();}
+    }
+
     private void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave, false))) {
             writer.write('\uFEFF'); // Добавляем BOM для UTF-8
             writer.write("id,type,name,status,description,epic");
             writer.newLine();
             for (Task task : taskMap.values()) { // записываем Task в файл
-                writer.write(task.toStringForSaving());
+                writer.write(toStringForSavingTasks(task));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             for (Epic epic : epicMap.values()) { // записываем Epic в файл
-                writer.write(epic.toStringForSaving());
+                writer.write(toStringForSavingTasks(epic));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             for (Subtask subtask : subtaskMap.values()) { // записываем Subtask в файл
-                writer.write(subtask.toStringForSaving());
+                writer.write(toStringForSavingTasks(subtask));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             System.out.println("Данные успешно записаны в файл.");
@@ -86,11 +98,40 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    public class ManagerSaveException extends RuntimeException {
-        public ManagerSaveException(String message) {
-            super(message);
+    // Этот метод должен был после считывания файла, сортировать строки по id (так я решал проблему, обозначенную Вами
+    // в комментариях ( - сабтаск считан раньше эпика или файл будет изменен вручную) ), а уже потом передавать в addFromString.
+    // Но я не смог заставить его работать. Возникают какие-то ошибки при чтении данных, из-за чего сортировка не работает!!!
+
+    /*public void readFile(File file) { // считывает файл по строкам
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка при чтении файла: " + e.getMessage());
         }
-    }
+
+        // Сортируем строки по ID
+        Collections.sort(lines, (a, b) -> {
+            // Убираем невидимый символ из строки для обоих элементов перед сравнением
+            String[] split1 = a.split(",");
+            split1[0] = split1[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
+
+            String[] split2 = b.split(",");
+            split2[0] = split2[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
+
+            return Integer.compare(Integer.parseInt(split1[0]), Integer.parseInt(split2[0]));
+
+            });
+
+        // Обрабатываем отсортированные строки
+        for (String line : lines) {
+            addFromString(line);
+        }
+    }*/
+
 
     public void readFile(File file) { // считывает файл по строкам
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
