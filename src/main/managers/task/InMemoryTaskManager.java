@@ -11,12 +11,15 @@ import model.Status;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    private HashMap<Integer, Task> taskMap;
-    private HashMap<Integer, Epic> epicMap;
-    private HashMap<Integer, Subtask> subtaskMap;
-    private int id = 0; // поле идентификатора
 
-    private HistoryManager historyManager; // стало
+
+    protected HashMap<Integer, Task> taskMap;
+    protected HashMap<Integer, Epic> epicMap;
+    protected HashMap<Integer, Subtask> subtaskMap;
+    protected int id = 0; // поле идентификатора
+
+    private HistoryManager historyManager;
+
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
@@ -71,9 +74,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epicMap.clear();
     }
-
-
-
 
     @Override
     public void deleteAllSubtask() { // Удаление всех Subtask. Очистка списков у Эпиков и обновление их статуса

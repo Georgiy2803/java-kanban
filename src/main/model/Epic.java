@@ -27,10 +27,11 @@ public class Epic extends Task{
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() +
+        return " \n" + getClass().getSimpleName() +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
-                ", status=" + status + ", подзадачи: " + listSubtaskIds + " \n";
+                ", status=" + status +
+                ", in Subtask=" + listSubtaskIds ;
     }
 }

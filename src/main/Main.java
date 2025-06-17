@@ -1,16 +1,25 @@
 
 import managers.Managers;
+import managers.file.FileBackedTaskManager;
+import managers.history.InMemoryHistoryManager;
+import managers.task.InMemoryTaskManager;
 import managers.task.TaskManager;
 import model.Task;
 import model.Epic;
 import model.Subtask;
 import model.Status;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.io.File;
+import java.io.IOException;
 
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        TaskManager manager = Managers.getDefault();
+        /*TaskManager manager = Managers.getDefault();
+
+
 
         manager.createTask(new Task("Task 1", "Описание 1"));
         manager.createTask(new Task("Task 2", "Описание 2"));
@@ -40,7 +49,7 @@ public class Main {
         manager.getTaskById(1);
         manager.getTaskById(2);
 
-
+        System.out.println(manager.getTaskById(1).get());
         System.out.println(manager.getTasks());
         System.out.println(manager.getEpics());
         System.out.println(manager.getSubtask());
@@ -63,6 +72,8 @@ public class Main {
 
         System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory() + "\n");
         System.out.println("Конец \n");
+
+
 
         manager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
         manager.updateSubtask(new Subtask("Купить скотч1", "5 шт. - прозрачного", 6, Status.DONE));
@@ -95,6 +106,51 @@ public class Main {
 
 
         System.out.println("Последние просмотренные задачи (новое): \n" + manager.getHistory() + "\n");
-        System.out.println("Конец \n");
+        System.out.println("Конец \n");*/
+
+
+
+        FileBackedTaskManager fileManager = new FileBackedTaskManager(new InMemoryHistoryManager(), new File("src\\main\\managers\\file\\fileToSaveTest.CSV"));
+
+        fileManager.createTask(new Task("Task 1", "Описание 1"));
+        fileManager.createTask(new Task("Task 2", "Описание 2"));
+        fileManager.createEpic(new Epic("Эпик 1", "3 подзадачи"));
+        fileManager.createEpic(new Epic("Эпик 2", "без подзадач"));
+
+        fileManager.createSubtask(new Subtask("Подзадача 1", "принадлежит Эпику 1", 3));
+        fileManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 3));
+        fileManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 3));
+        fileManager.createSubtask(new Subtask("Подзадача 4", "принадлежит Эпику 2", 4));
+
+        fileManager.updateSubtask(new Subtask("Купить коробки1", "Размер 350х350х300", 5, Status.IN_PROGRESS));
+        fileManager.updateSubtask(new Subtask("Купить скотч1", "5 шт. - прозрачного", 6, Status.DONE));
+        fileManager.updateSubtask(new Subtask("Составить план1", "Начертить схему", 7, Status.DONE));
+
+        System.out.println(fileManager.getTasks());
+        System.out.println(fileManager.getEpics());
+        System.out.println(fileManager.getSubtask());
+
+        /*fileManager.deleteAllTasks();
+        fileManager.deleteAllEpic();
+        fileManager.deleteAllSubtask();*/
+        System.out.println("Очистка \n");
+
+        System.out.println(fileManager.getTasks());
+        System.out.println(fileManager.getEpics());
+        System.out.println(fileManager.getSubtask());
+
+        String fileTest = "fileToSaveTest.CSV";
+        fileManager.loadFromFile(fileTest); // передаём имя файла в метод
+
+        System.out.println(fileManager.getTasks());
+        System.out.println(fileManager.getEpics());
+        System.out.println(fileManager.getSubtask());
+
+
+
+        System.out.println(fileManager.getTasks());
+        System.out.println(fileManager.getEpics());
+        System.out.println(fileManager.getSubtask());
+
     }
 }

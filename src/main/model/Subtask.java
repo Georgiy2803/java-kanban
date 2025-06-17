@@ -13,6 +13,7 @@ public class Subtask extends Task {
         super(name, description, id, status);
     }
 
+
     public int getEpicId() {
         return epicId;
     }
@@ -34,11 +35,11 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() +
+        return " \n" + getClass().getSimpleName() +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
-                ", subtasks=" + epicId +
-                '}' + "\n";
+                ", status=" + status +
+                ", belong Epic=" + epicId ;
     }
 }
