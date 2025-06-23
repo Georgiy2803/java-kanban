@@ -1,5 +1,8 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class Subtask extends Task {
 
     protected Integer epicId;
@@ -8,6 +11,13 @@ public class Subtask extends Task {
         super(name, description);
         this.epicId = epicId;
     }
+
+    // Конструктор для создания с меткой времени
+    public Subtask(String name, String description, Integer epicId, LocalDateTime startTime, Duration duration) {
+        super(name, description, startTime, duration);
+        this.epicId = epicId;
+    }
+
 
     public Subtask(String name, String description, Integer id, Status status) { // Конструктор для обновления
         super(name, description, id, status);
@@ -40,6 +50,9 @@ public class Subtask extends Task {
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
-                ", belong Epic=" + epicId ;
+                ", принадлежит эпику=" + epicId +
+                ", начало подзадачи= " + (startTime != null ? startTime.format(formatter) : "не установлено") +
+                ", конец подзадачи= " + (startTime != null && duration != null ? getEndTime(duration, startTime).format(formatter) : "не определён");
+
     }
 }
