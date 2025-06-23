@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SubtaskTest {
 
 
-
+    // две задачи будут считаться равными, если их идентификаторы совпадают
     @Test
     public void equals_returnTrue_passedIdsMatch() {
         Subtask subtask1 = new Subtask("name", "description", 1);
@@ -18,7 +18,6 @@ public class SubtaskTest {
     }
 
     @Test
-    // setId_and_setEpicId_verifyNoChange - вариант от Яндекс GPT
     public void setId_dontsetIdSubtask_toYourEpic() { // Нельзя Subtask сделать своим Эпик
         Subtask subtask = new Subtask("name", "description", 1);
 

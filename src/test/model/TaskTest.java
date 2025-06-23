@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TaskTest {
 
+    // две задачи будут считаться равными, если их идентификаторы совпадают
     @Test
     public void equals_returnTrue_passedIdsMatch() {
         Task task1 = new Task("name", "description", 1);

@@ -10,11 +10,13 @@ import model.Epic;
 import model.Status;
 import model.Subtask;
 import model.Task;
+
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +26,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private File fileToSave;
 
     // Из тз к 7-ому спринту. Пусть новый менеджер получает файл для автосохранения в своём конструкторе и сохраняет его в поле.
-    public FileBackedTaskManager(HistoryManager historyManager, File file)  {
+    public FileBackedTaskManager(HistoryManager historyManager, File file) {
         super(historyManager);
 
         if (!file.exists()) { //  Проверяем, существует ли файл
@@ -67,18 +69,46 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileBackedTaskManager;
     }
 
-    private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
+   /* private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
         if (task.getClass().getSimpleName().equals("Subtask")) {
             Subtask subtask = (Subtask) task;
-            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription() + "," + subtask.getEpicId();
+            return task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";" + task.getStatus() + ";" + task.getDescription() + ";" + subtask.getEpicId();
         } else {
-            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription();}
+            return task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";" + task.getStatus() + ";" + task.getDescription();}
+    }*/
+
+    private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
+        String stringTask = "";
+        switch (task.getClass().getSimpleName()) {
+            case "Task": // условие
+                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
+                        + task.getStatus() + ";" + task.getDescription() + ";" + "н/д" + ";"
+                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
+                        + (task.getDuration() != null ? task.getDuration().toMinutes() : "н/д");
+                break;
+            case "Epic": // условие
+                Epic epic = (Epic) task;
+                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
+                        + task.getStatus() + ";" + task.getDescription() + ";" + "н/д" + ";"
+                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
+                        + (epic.getEndTime() != null ? epic.getEndTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д");
+                break;
+            case "Subtask": // условие
+                Subtask subtask = (Subtask) task;
+                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
+                        + task.getStatus() + ";" + task.getDescription() + ";" + subtask.getEpicId() + ";"
+                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
+                        + (task.getDuration() != null ? task.getDuration().toMinutes() : "н/д");
+                break;
+        }
+        return stringTask;
     }
+
 
     private void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave, false))) {
             writer.write('\uFEFF'); // Добавляем BOM для UTF-8
-            writer.write("id,type,name,status,description,epic");
+            writer.write("id;type;name;status;description;epic;startTime;duration");
             writer.newLine();
             for (Task task : taskMap.values()) { // записываем Task в файл
                 writer.write(toStringForSavingTasks(task));
@@ -98,74 +128,66 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    // Этот метод должен был после считывания файла, сортировать строки по id (так я решал проблему, обозначенную Вами
-    // в комментариях ( - сабтаск считан раньше эпика или файл будет изменен вручную) ), а уже потом передавать в addFromString.
-    // Но я не смог заставить его работать. Возникают какие-то ошибки при чтении данных, из-за чего сортировка не работает!!!
-
-    /*public void readFile(File file) { // считывает файл по строкам
+    public void readFile(File file) { // считывает файл по строкам
         List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            reader.readLine(); // Просто прочитаем первую строку и проигнорируем её (заголовочная строка)
+            while ((line = reader.readLine()) != null) { // Дальше читаем остальные строки
                 lines.add(line);
             }
         } catch (IOException e) {
             System.err.println("Ошибка при чтении файла: " + e.getMessage());
         }
-
         // Сортируем строки по ID
         Collections.sort(lines, (a, b) -> {
-            // Убираем невидимый символ из строки для обоих элементов перед сравнением
-            String[] split1 = a.split(",");
-            split1[0] = split1[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
-
-            String[] split2 = b.split(",");
-            split2[0] = split2[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
+            String[] split1 = a.split(";");
+            String[] split2 = b.split(";");
 
             return Integer.compare(Integer.parseInt(split1[0]), Integer.parseInt(split2[0]));
+        });
 
-            });
-
-        // Обрабатываем отсортированные строки
-        for (String line : lines) {
+        for (String line : lines) { // Передаём отсортированные строки
             addFromString(line);
-        }
-    }*/
-
-
-    public void readFile(File file) { // считывает файл по строкам
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                addFromString(line); // Передаём строку в метод forString для обработки
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка при чтении файла: " + e.getMessage());
         }
     }
 
     private void addFromString(String line) { // создаёт из строки объект и добавляет в хеш-таблицу
-        String[] split = line.split(",");
-        split[0] = split[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
-        try { // пропускаем первую строчку, так как она оглавление
+        String[] split = line.split(";");
+        // split[0] = split[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
+        try { // пропускаем строчку, если в ней ошибка
             iDFromBackup(Integer.parseInt(split[0]));
         } catch (NumberFormatException e) {
             return;
         }
-        Status status = Status.valueOf(split[3]); // Преобразуем строку в объект Status
         switch (split[1]) { // определяем какой тип задачи и сохраняем в соответсвующую хеш-таблицу
             case "TASK":
-                Task task = new Task(split[2], split[4], Integer.parseInt(split[0]), status);  // создаём объект
+                //Task(String name, String description, LocalDateTime startTime, Duration duration)
+                // "0id; 1type; 2name; 3status; 4description; 5epic; 6startTime; 7duration"
+                Task task = new Task(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));  // создаём обычный объект
+                // проверяем, что временные метки есть в файле
+                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                    task.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
+                    task.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+                }
                 taskMap.put(task.getId(), task); // Добавляем задачу в taskMap
                 break;
             case "EPIC":
                 Epic epic = new Epic(split[2], split[4], Integer.parseInt(split[0]));  // создаём объект
                 epic.setStatus(Status.valueOf(split[3]));
+                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                    epic.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
+                    epic.setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[7])), ZoneId.of("Europe/Moscow")));
+                }
                 epicMap.put(epic.getId(), epic); // Добавляем задачу в taskMap
                 break;
             case "SUBTASK":
                 Subtask subtask = new Subtask(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));
                 subtask.setEpicId(Integer.parseInt(split[5]));
+                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                    subtask.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
+                    subtask.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+                }
                 subtaskMap.put(subtask.getId(), subtask); // Добавляем задачу в taskMap
                 Epic epicThisSubtask = epicMap.get(Integer.parseInt(split[5])); // Находим Эпик по id
                 if (epicThisSubtask != null) { // Проверка, если такого Эпика не существует

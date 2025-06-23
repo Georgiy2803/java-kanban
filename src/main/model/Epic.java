@@ -1,10 +1,14 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Epic extends Task{
 
     protected ArrayList<Integer> listSubtaskIds = new ArrayList<>(); // subtaskIds было idSubtask
+    protected LocalDateTime endTime; // Рассчитывается. Время завершения — время окончания самой поздней подзадачи
 
     public Epic(String name, String description) { // Конструктор для создания
         super(name, description);
@@ -17,6 +21,14 @@ public class Epic extends Task{
 
     public ArrayList<Integer> getListSubtaskIds() {
         return listSubtaskIds;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public void addSubtaskId(int subtaskId) {
@@ -32,6 +44,8 @@ public class Epic extends Task{
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
-                ", in Subtask=" + listSubtaskIds ;
+                ", входящие подзадачи=" + listSubtaskIds +
+                ", начало эпика= " + (startTime != null ? startTime.format(formatter) : "не установлено") +
+                ", конец эпика= " + (endTime != null ? endTime.format(formatter) : "не определён");
     }
 }

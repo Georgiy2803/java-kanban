@@ -4,7 +4,6 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,11 +51,14 @@ public interface TaskManager {
     void deleteSubtaskById(int id);
 
     //3. Дополнительные методы: a. Получение списка всех подзадач определённого эпика. - скорее всего.
-    ArrayList<Subtask> listOfEpicSubtasks(int idEpic);
+    List<Subtask> listOfEpicSubtasks(int idEpic);
 
     // 5-й спринт
 
-    List<Task> getHistory(); // должен возвращать последние 10 просмотренных задач
+    List<Task> getHistory(); // должен возвращать просмотренные задачи
+
+    List<Task> getPrioritizedTasks();  // возвращает все отсортирванные задачи по приоритету — то есть по startTime
+
 
 }
 
