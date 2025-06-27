@@ -6,10 +6,7 @@ import exception.ManagerSaveException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import managers.task.InMemoryTaskManager;
-import model.Epic;
-import model.Status;
-import model.Subtask;
-import model.Task;
+import model.*;
 
 import java.io.IOException;
 import java.io.BufferedWriter;
@@ -22,8 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static model.TaskType.*;
+
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private File fileToSave;
+    private String noData = "н/д";
 
     // Из тз к 7-ому спринту. Пусть новый менеджер получает файл для автосохранения в своём конструкторе и сохраняет его в поле.
     public FileBackedTaskManager(HistoryManager historyManager, File file) {
@@ -69,57 +69,45 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileBackedTaskManager;
     }
 
-   /* private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
-        if (task.getClass().getSimpleName().equals("Subtask")) {
-            Subtask subtask = (Subtask) task;
-            return task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";" + task.getStatus() + ";" + task.getDescription() + ";" + subtask.getEpicId();
-        } else {
-            return task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";" + task.getStatus() + ";" + task.getDescription();}
-    }*/
-
-    private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
-        String stringTask = "";
-        switch (task.getClass().getSimpleName()) {
-            case "Task": // условие
-                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
-                        + task.getStatus() + ";" + task.getDescription() + ";" + "н/д" + ";"
-                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
-                        + (task.getDuration() != null ? task.getDuration().toMinutes() : "н/д");
-                break;
-            case "Epic": // условие
-                Epic epic = (Epic) task;
-                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
-                        + task.getStatus() + ";" + task.getDescription() + ";" + "н/д" + ";"
-                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
-                        + (epic.getEndTime() != null ? epic.getEndTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д");
-                break;
-            case "Subtask": // условие
-                Subtask subtask = (Subtask) task;
-                stringTask = task.getId() + ";" + task.getClass().getSimpleName().toUpperCase() + ";" + task.getName() + ";"
-                        + task.getStatus() + ";" + task.getDescription() + ";" + subtask.getEpicId() + ";"
-                        + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : "н/д") + ";"
-                        + (task.getDuration() != null ? task.getDuration().toMinutes() : "н/д");
-                break;
-        }
-        return stringTask;
+    private String toStringForSavingTask(Task task) { // метод сохранения задачи в строку
+        return task.getId() + ";" + task.getTaskType() + ";" + task.getName() + ";"
+                + task.getStatus() + ";" + task.getDescription() + ";" + noData + ";"
+                + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
+                + (task.getDuration() != null ? task.getDuration().toMinutes() : noData) + ";"
+                + (task.getEndTime() != null ? task.getEndTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData);
     }
 
+    private String toStringForSavingEpic(Epic epic) { // метод сохранения Эпик в строку
+        return epic.getId() + ";" + epic.getTaskType() + ";" + epic.getName() + ";"
+                + epic.getStatus() + ";" + epic.getDescription() + ";" + noData + ";"
+                + (epic.getStartTime() != null ? epic.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
+                + (epic.getStartTime() != null && epic.getEndTime() != null ? Duration.between(epic.getStartTime(), epic.getEndTime()).toMinutes() : noData) + ";"
+                + (epic.getEndTime() != null ? epic.getEndTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData);
+    }
+
+    private String toStringForSavingSubtask(Subtask subtask) { // метод сохранения подзадачи в строку
+        return subtask.getId() + ";" + subtask.getTaskType() + ";" + subtask.getName() + ";"
+                + subtask.getStatus() + ";" + subtask.getDescription() + ";" + subtask.getEpicId() + ";"
+                + (subtask.getStartTime() != null ? subtask.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
+                + (subtask.getDuration() != null ? subtask.getDuration().toMinutes() : noData) + ";"
+                + (subtask.getEndTime() != null ? subtask.getEndTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData);
+    }
 
     private void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave, false))) {
             writer.write('\uFEFF'); // Добавляем BOM для UTF-8
-            writer.write("id;type;name;status;description;epic;startTime;duration");
+            writer.write("id;type;name;status;description;epic;startTime;duration;endTime");
             writer.newLine();
             for (Task task : taskMap.values()) { // записываем Task в файл
-                writer.write(toStringForSavingTasks(task));
+                writer.write(toStringForSavingTask(task));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             for (Epic epic : epicMap.values()) { // записываем Epic в файл
-                writer.write(toStringForSavingTasks(epic));
+                writer.write(toStringForSavingEpic(epic));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             for (Subtask subtask : subtaskMap.values()) { // записываем Subtask в файл
-                writer.write(toStringForSavingTasks(subtask));
+                writer.write(toStringForSavingSubtask(subtask));
                 writer.newLine(); // Добавляем перенос строки между задачами
             }
             System.out.println("Данные успешно записаны в файл.");
@@ -152,9 +140,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
+
+    // метод для проверки на noData
+    private boolean isNoData(String value) {
+        return value == null || value.equals(noData) || value.trim().isEmpty();
+    }
+
+    // Теперь используем этот метод в методе addFromString
     private void addFromString(String line) { // создаёт из строки объект и добавляет в хеш-таблицу
         String[] split = line.split(";");
-        // split[0] = split[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
         try { // пропускаем строчку, если в ней ошибка
             iDFromBackup(Integer.parseInt(split[0]));
         } catch (NumberFormatException e) {
@@ -162,33 +156,34 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
         switch (split[1]) { // определяем какой тип задачи и сохраняем в соответсвующую хеш-таблицу
             case "TASK":
-                //Task(String name, String description, LocalDateTime startTime, Duration duration)
-                // "0id; 1type; 2name; 3status; 4description; 5epic; 6startTime; 7duration"
                 Task task = new Task(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));  // создаём обычный объект
                 // проверяем, что временные метки есть в файле
-                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                if (!isNoData(split[6]) && !isNoData(split[7])) {
                     task.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
                     task.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+                    task.setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[8])), ZoneId.of("Europe/Moscow")));
                 }
                 taskMap.put(task.getId(), task); // Добавляем задачу в taskMap
                 break;
             case "EPIC":
                 Epic epic = new Epic(split[2], split[4], Integer.parseInt(split[0]));  // создаём объект
                 epic.setStatus(Status.valueOf(split[3]));
-                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                if (!isNoData(split[6]) && !isNoData(split[8])) {
                     epic.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
-                    epic.setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[7])), ZoneId.of("Europe/Moscow")));
+                    epic.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+                    epic.setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[8])), ZoneId.of("Europe/Moscow")));
                 }
-                epicMap.put(epic.getId(), epic); // Добавляем задачу в taskMap
+                epicMap.put(epic.getId(), epic); // Добавляем задачу в epicMap
                 break;
             case "SUBTASK":
                 Subtask subtask = new Subtask(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));
                 subtask.setEpicId(Integer.parseInt(split[5]));
-                if ((split[6] != null && split[7] != null) && (!split[6].equals("н/д") && !split[7].equals("н/д"))) {
+                if (!isNoData(split[6]) && !isNoData(split[7])) {
                     subtask.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
                     subtask.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+                    subtask.setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[8])), ZoneId.of("Europe/Moscow")));
                 }
-                subtaskMap.put(subtask.getId(), subtask); // Добавляем задачу в taskMap
+                subtaskMap.put(subtask.getId(), subtask); // Добавляем задачу в subtaskMap
                 Epic epicThisSubtask = epicMap.get(Integer.parseInt(split[5])); // Находим Эпик по id
                 if (epicThisSubtask != null) { // Проверка, если такого Эпика не существует
                     epicThisSubtask.addSubtaskId(Integer.parseInt(split[0])); // добавляем id Subtask в Список Эпика

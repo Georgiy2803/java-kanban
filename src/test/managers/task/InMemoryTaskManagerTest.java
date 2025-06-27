@@ -274,8 +274,8 @@ public class InMemoryTaskManagerTest {
         taskManager.createEpic(new Epic("Эпик 1", "3 подзадачи"));
         taskManager.createEpic(new Epic("Эпик 2", "1 подзадача"));
         taskManager.createSubtask(new Subtask("Подзадача 1", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 15, 1), Duration.ofMinutes(55)));
-        taskManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 6), Duration.ofMinutes(200)));
-        taskManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 0), Duration.ofMinutes(5)));
+        taskManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 6), Duration.ofMinutes(20)));
+        taskManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 15, 57), Duration.ofMinutes(8)));
         taskManager.createSubtask(new Subtask("Подзадача 4", "принадлежит Эпику 2", 9));
 
         // проверка количества Task в списке (HashMap)
@@ -288,14 +288,16 @@ public class InMemoryTaskManagerTest {
         // количество задач в отсортированном списке по приоритету (startTime)
         assertEquals(9, taskManager.getPrioritizedTasks().size(), "В списке отсортирванные задачи по приоритету (startTime) не верное количество задач");
 
+
+
         // Проверка правильности сортировки задач
         assertEquals("Task5", taskManager.getPrioritizedTasks().get(0).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Task1", taskManager.getPrioritizedTasks().get(1).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Task3", taskManager.getPrioritizedTasks().get(2).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Task4", taskManager.getPrioritizedTasks().get(3).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Task2", taskManager.getPrioritizedTasks().get(4).getName(), "Задача в отсортированном списке не правильно расположена");
-        assertEquals("Подзадача 1", taskManager.getPrioritizedTasks().get(5).getName(), "Задача в отсортированном списке не правильно расположена");
-        assertEquals("Эпик 1", taskManager.getPrioritizedTasks().get(6).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Эпик 1", taskManager.getPrioritizedTasks().get(5).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Подзадача 1", taskManager.getPrioritizedTasks().get(6).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Подзадача 3", taskManager.getPrioritizedTasks().get(7).getName(), "Задача в отсортированном списке не правильно расположена");
         assertEquals("Подзадача 2", taskManager.getPrioritizedTasks().get(8).getName(), "Задача в отсортированном списке не правильно расположена");
 
