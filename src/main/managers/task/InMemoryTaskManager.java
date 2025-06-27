@@ -1,6 +1,9 @@
 package managers.task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import managers.history.HistoryManager;
 import model.Task;
@@ -8,17 +11,13 @@ import model.Epic;
 import model.Subtask;
 import model.Status;
 
-
 public class InMemoryTaskManager implements TaskManager {
-
-
-
     protected HashMap<Integer, Task> taskMap;
     protected HashMap<Integer, Epic> epicMap;
     protected HashMap<Integer, Subtask> subtaskMap;
     protected int id = 0; // поле идентификатора
-
-    private HistoryManager historyManager;
+    private HistoryManager historyManager; // просмотренные задачи
+    private TreeSet<Task> sortedTasks; // Список задач отсортированных по startTime
 
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -26,16 +25,41 @@ public class InMemoryTaskManager implements TaskManager {
         taskMap = new HashMap<>(); // создали объект
         epicMap = new HashMap<>();
         subtaskMap = new HashMap<>();
+        sortedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime).thenComparingInt(Task::getId));
     }
 
     // 5-й спринт
     @Override
-    public List<Task> getHistory() { // должен возвращать последние 10 просмотренных задач
+    public List<Task> getHistory() { // должен возвращать просмотренные задачи
         return historyManager.getHistory();
     }
 
+    // 8-ой спринт
+    @Override
+    public List<Task> getPrioritizedTasks() { // возвращает все отсортирванные задачи по startTime и id
+        return new ArrayList<>(sortedTasks);
+    }
+
+    // Метод для проверки пересечения задачи
+    private boolean checkTimeIntersection(Task targetTask, Task taskIsInList) {
+        return targetTask != taskIsInList && // задача не пересекается сама с собой.
+                !(taskIsInList.getTaskType().toString().equals("EPIC")) && // если задача Эпик, проверку не производим
+                !(targetTask.getEndTime().isBefore(taskIsInList.getStartTime())) && // если конец первой задачи наступает раньше, чем начинается вторая задача
+                !(taskIsInList.getEndTime().isBefore(targetTask.getStartTime())); // если начало первой задачи происходит позже, чем заканчивается вторая задача
+    }
+
+    // Метод для проверки пересечения задачи с любой другой задачей в Map
+    private boolean checkTimeIntersectionInMap(Task targetTask) {
+        // anyMatch — это метод в Java Stream API, который используется для проверки, удовлетворяет ли хотя бы один
+        // элемент потока заданному условию. Метод возвращает true, если хотя бы один элемент соответствует условию,
+        // и false, если ни один элемент не соответствует.
+        return sortedTasks.stream()
+                .anyMatch(task -> checkTimeIntersection(targetTask, task));
+    }
+
+
     // 4-й спринт
-    // 2a. Получение списка всех задач
+// 2a. Получение списка всех задач
     @Override
     public List<Task> getTasks() {
         return new ArrayList<>(taskMap.values());
@@ -54,39 +78,50 @@ public class InMemoryTaskManager implements TaskManager {
     // 2b. Удаление всех задач.
     @Override
     public void deleteAllTasks() { // удаление всех Task
-        for(Task task: taskMap.values()) {
-            historyManager.remove(task.getId());
+        for (Task task : taskMap.values()) {
+            historyManager.remove(task.getId()); // удаление задачи из истории просмотров
+            try {
+                sortedTasks.remove(task); // удаляем Task из sortedTasks, если он там есть
+            } catch (Exception e) {
+            }
         }
-        taskMap.clear();
-
+        taskMap.clear(); // удаляем все Task из мапа
     }
 
     @Override
     public void deleteAllEpic() { // удаление всех Epic и связанных с ними Subtask
-        for(Epic epic: epicMap.values()) {
+        for (Epic epic : epicMap.values()) {
             if (!epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список где хранятся Подзадачи
                 for (Integer idSubtask : epic.getListSubtaskIds()) {
                     subtaskMap.remove(idSubtask);
                     historyManager.remove(idSubtask);
+                    try { sortedTasks.remove(subtaskMap.get(idSubtask)); // удаляем Subtask из sortedTasks, если он там есть
+                    } catch (Exception e) {}
                 }
             }
             historyManager.remove(epic.getId());
+            try { sortedTasks.remove(epic); // удаляем Epic из sortedTasks, если он там есть
+            } catch (Exception e) {}
         }
         epicMap.clear();
     }
 
     @Override
     public void deleteAllSubtask() { // Удаление всех Subtask. Очистка списков у Эпиков и обновление их статуса
-        for(Subtask subtask: subtaskMap.values()) {
+        for (Subtask subtask : subtaskMap.values()) {
             historyManager.remove(subtask.getId());
+            try { sortedTasks.remove(subtask); // удаляем Subtask из sortedTasks, если он там есть
+            } catch (Exception e) {}
         }
         for (Subtask subtask : getSubtask()) {
             int idEpic = subtask.getEpicId(); // получаем id Epic к которому привязаны
             Epic epic = epicMap.get(idEpic); // находим Эпик в мапе
-            if (!epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список
-                epic.getListSubtaskIds().clear(); // очищаем список
+            if (epic != null) {
+                if (!epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список
+                    epic.getListSubtaskIds().clear(); // очищаем список
+                }
+                updateEpicStatus(idEpic); // Обновление статуса Эпика
             }
-            updateEpicStatus(idEpic); // Обновление статуса Эпика
         }
         subtaskMap.clear(); // удаляем все Subtask
     }
@@ -117,9 +152,23 @@ public class InMemoryTaskManager implements TaskManager {
     // 2d. Создание. Сам объект должен передаваться в качестве параметра.
     @Override
     public Task createTask(Task inputTask) {
-        inputTask.setId(getNextId());
-        taskMap.put(id, inputTask);
-        return inputTask;
+        try {
+            if (inputTask.getStartTime() != null) { // если у задачи задано время начала
+                if (checkTimeIntersectionInMap(inputTask)) { // проверяем, не пересекается ли она с другими задачами по времени
+                    throw new IllegalArgumentException("Задача " + inputTask.getName() + " не была добавлена, т.к. пересекается с уже существующими задачами.");
+                }
+            }
+            inputTask.setId(getNextId());
+            taskMap.put(id, inputTask);
+
+            if (inputTask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+                sortedTasks.add(inputTask); // добавляем в sortedTasks
+            }
+            return inputTask;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("Ошибка: " + ex.getMessage()); // Обрабатываем исключение
+            return null;
+        }
     }
 
     @Override
@@ -131,13 +180,27 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask createSubtask(Subtask inputSubtask) { // создание Subtask
+        if (inputSubtask.getStartTime() != null) { // если у подзадачи задано время начала
+            if (checkTimeIntersectionInMap(inputSubtask)) { // то проверяем не пересекается ли она с другими задачами по времени
+                throw new IllegalArgumentException("Новая задача пересекается с уже существующими задачами.");
+            }
+        }
         Epic epic = epicMap.get(inputSubtask.getEpicId()); // находим Эпик в мапе (получаем id Epic к которому привязаны)
-        if (epic == null) {
-            return null;
+        if (epic == null) { // проверяем существует ли Эпик
+            throw new IllegalArgumentException("Подзадачу не удаётся добавить, т.к. Эпик указан не верно или не существует.");
         }
         inputSubtask.setId(getNextId());
         subtaskMap.put(id, inputSubtask);
+        if (inputSubtask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+            sortedTasks.add(inputSubtask); // добавляем в sortedTasks
+        }
+        // Обновляем Эпик
         addSubtaskToEpic(inputSubtask); // записывает в Эпик номер id Subtask к которому он привязан
+        updateEpicDateTime(inputSubtask.getEpicId()); // записывает в Эпик время начала и завершения
+
+        if (epicMap.get(inputSubtask.getEpicId()).getStartTime() != null) { // проверяем, задано ли время начала у подзадачи
+            sortedTasks.add(epic); // добавляем в sortedTasks
+        }
         return inputSubtask;
     }
 
@@ -145,17 +208,43 @@ public class InMemoryTaskManager implements TaskManager {
     private void addSubtaskToEpic(Subtask inputSubtask) {
         int epicId = inputSubtask.getEpicId();  // узнаём id Эпик к которому привязан Subtask
         Epic epic = epicMap.get(epicId); // Находим Эпик по id
-        if (epic != null) { // Проверка, если такого Эпика не существует
+        if (epic != null) { // Проверка, что такой Эпик существует
             epic.getListSubtaskIds().add(inputSubtask.getId()); // добавляем id Subtask в Список Эпика
         }
         updateEpicStatus(epicId);
     }
 
+    // метод, записывает в Эпик время начала и завершения исходя из подзадач
+    private void updateEpicDateTime(int epicId) {
+        Epic epic = epicMap.get(epicId);
+
+        //Время начала — дата старта самой ранней подзадачи
+        Optional<LocalDateTime> startTime = listOfEpicSubtasks(epicId).stream()
+                .map(Subtask::getStartTime)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo);
+
+        //время завершения — время окончания самой поздней из задач
+        Optional<LocalDateTime> getEndTime = listOfEpicSubtasks(epicId).stream()
+                .map(Subtask::getEndTime)
+                .filter(Objects::nonNull)
+                .max(LocalDateTime::compareTo);
+
+        // Обновляем соответствующие поля у эпика
+        startTime.ifPresent(epic::setStartTime); // Метод ifPresent() автоматически вызовет метод setStartTime() только
+        getEndTime.ifPresent(epic::setEndTime); // в том случае, если значение в Optional присутствует.
+
+    }
+
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
     @Override
-    public Optional<Task> updateTask (Task inputTask) {
+    public Optional<Task> updateTask(Task inputTask) {
         if (taskMap.get(inputTask.getId()) == null) { // если объекта не существует, производим выход
             return Optional.empty();
+        }
+        sortedTasks.remove(taskMap.get(inputTask.getId())); // Удаляем старый объект в sortedTasks
+        if (inputTask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+            sortedTasks.add(inputTask); // добавляем в sortedTasks обновленный объект
         }
         int oldId = inputTask.getId();
         taskMap.put(oldId, inputTask);
@@ -167,41 +256,64 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicMap.get(inputEpic.getId()) == null) { // если объекта не существует, производим выход
             return Optional.empty();
         }
-        int oldId = inputEpic.getId();
+
+        int oldId = inputEpic.getId(); // берём id старого Эпика
         Epic oldEpic = epicMap.get(oldId); // находим старый Эпик в мапе
-        for (int subtaskId : oldEpic.getListSubtaskIds()) {
+        for (int subtaskId : oldEpic.getListSubtaskIds()) { // Копируем id связанных Подзадач в новый Эпик
             inputEpic.addSubtaskId(subtaskId);
         }
         inputEpic.setStatus(oldEpic.getStatus()); // вносим в новый Эпик Status старого (изменяемого)
+        sortedTasks.remove(oldEpic); // Удаляем старый объект в sortedTasks
         epicMap.put(oldId, inputEpic); // Сохраняем обновлённый Эпик
+        updateEpicDateTime(oldId); // записывает в Эпик время начала и завершения
+        sortedTasks.add(epicMap.get(oldId)); // добавляем в sortedTasks обновленный Эпик
+
         return Optional.of(inputEpic);
     }
 
     @Override
-    public Optional<Subtask> updateSubtask (Subtask inputSubtask) {
+    public Optional<Subtask> updateSubtask(Subtask inputSubtask) {
         if (subtaskMap.get(inputSubtask.getId()) == null) { // если объекта не существует, производим выход
             return Optional.empty();
         }
+
+        if (inputSubtask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+            sortedTasks.remove(subtaskMap.get(inputSubtask.getId())); // Удаляем старый объект в sortedTasks
+            sortedTasks.remove(epicMap.get(subtaskMap.get(inputSubtask.getId()).getEpicId())); // Удаляем старый объект в sortedTasks
+        }
+
         int oldId = inputSubtask.getId();
         Subtask oldSubtask = subtaskMap.get(oldId); // находим старый Subtask в мапе
         inputSubtask.setEpicId(oldSubtask.getEpicId()); // вносим новый Subtask epicId старого (изменяемого)
         subtaskMap.put(oldId, inputSubtask);
+
         updateEpicStatus(oldSubtask.getEpicId()); // Обновление статуса Эпика
+        updateEpicDateTime(oldSubtask.getEpicId()); // записываем в Эпик время начала и завершения
+
+        if (inputSubtask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+            sortedTasks.add(inputSubtask); // добавляем в sortedTasks обновленный объект
+            sortedTasks.add(epicMap.get(oldSubtask.getEpicId())); // добавляем в sortedTasks обновленный объект
+        }
+
         return Optional.of(inputSubtask);
     }
 
     // Обновление статуса Эпика
     private void updateEpicStatus(int epicId) {
         Epic epic = epicMap.get(epicId);
-        double sum = 0; // количество завершённых подзадач у Эпика
-        for (Subtask subtask : listOfEpicSubtasks(epicId)) {
-            Status status = subtask.getStatus(); // Вытаскиваем у Subtask его Статус
-            if (status.equals(Status.DONE)) {  // Проверяем Статус, если завершён, то..
-                sum = sum + 1; // прибавляем 1
-            } else if (status.equals(Status.IN_PROGRESS)) { // если в "в процессе" то..
-                sum = sum + 0.5; // прибавляем 0,5
-            }
-        }
+        // Используем stream для подсчета статусов подзадач
+        double sum = listOfEpicSubtasks(epicId).stream()
+                .mapToDouble(subtask -> {
+                    Status status = subtask.getStatus();
+                    if (status.equals(Status.DONE)) {
+                        return 1.0; // если задача завершена, считаем её целиком
+                    } else if (status.equals(Status.IN_PROGRESS)) {
+                        return 0.5; // если задача в процессе, считаем половину
+                    }
+                    return 0.0; // остальные случаи (NEW) считаются ноль баллов
+                })
+                .sum(); // суммируем баллы
+
         if (sum == 0) { // если все подзадачи новые или их нет
             epic.setStatus(Status.NEW);  // присваиваем Эпику Статус - Новое.
         } else if (sum == epic.getListSubtaskIds().size()) { // если все подзадачи завершены
@@ -211,62 +323,82 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+
     // 2f. Удаление по идентификатору.
     @Override
     public void deleteTaskById(int id) { // deleteTaskById
         if (taskMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }
-        historyManager.remove(taskMap.get(id).getId());
+        try {
+            sortedTasks.remove(taskMap.get(id)); // удаляем Task из sortedTasks, если он там есть
+        } catch (Exception e) {
+        }
+        historyManager.remove(taskMap.get(id).getId()); //id
         taskMap.remove(id);
     }
 
     @Override
-    public void deleteEpicById (int id) { // deleteEpicById
+    public void deleteEpicById(int id) { // deleteEpicById
         if (epicMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }
-        Epic Epic = epicMap.get(id); // находим Эпик в мапе
-        if (!Epic.getListSubtaskIds().isEmpty()) { // проверяем, пуст ли список где хранятся Подзадачи
-            for (Integer idSubtask : Epic.getListSubtaskIds()) {
-                subtaskMap.remove(idSubtask);
-                historyManager.remove(idSubtask);
-            }
+
+        try {
+            sortedTasks.remove(epicMap.get(id)); // удаляем Эпик из sortedTasks
+        } catch (Exception e) {
         }
-        historyManager.remove(epicMap.get(id).getId());
-        epicMap.remove(id);
+        Epic epic = epicMap.get(id); // находим Эпик в мапе
+
+        // Удаляем все подзадачи с помощью Stream API
+        epic.getListSubtaskIds().stream()
+                .forEach(subtaskId -> {
+                    try {
+                        sortedTasks.remove(subtaskMap.get(subtaskId)); // удаляем подзадачу из sortedTasks, если она там есть
+                    } catch (Exception e) {
+                    }
+                    subtaskMap.remove(subtaskId);     // удаляем подзадачу из mапа
+                    historyManager.remove(subtaskId); // удаляем историю подзадачи
+                });
+
+        historyManager.remove(epicMap.get(id).getId()); // удаляем Эпик из истории просмотров
+        epicMap.remove(id); // удаляем Эпик из мапа
     }
+
 
     @Override
     public void deleteSubtaskById(int id) { // deleteSubtaskById
         if (subtaskMap.get(id) == null) { // если объекта не существует, производим выход
             return;
         }
+        try {
+            sortedTasks.remove(subtaskMap.get(id)); // удаляем Subtask из sortedTasks, если она там есть
+        } catch (Exception e) {
+        }
+
         int idEpic = subtaskMap.get(id).getEpicId(); // получаем id Epic к которому привязан Subtask
         Epic epic = epicMap.get(idEpic); // находим Эпик в мапе
-        for (int i = 0; i < epic.getListSubtaskIds().size(); i++) {
-            if (epic.getListSubtaskIds().get(i) == id) { // находим индекс подзадачи
-                epic.getListSubtaskIds().remove(i); // удаляем id подзадачи
-            }
-        }
-        historyManager.remove(subtaskMap.get(id).getId());
-        subtaskMap.remove(id); // удаляем Подзадачу
+
+        // Используем стрим для удаления id подзадачи из списка подзадач Эпика
+        epic.getListSubtaskIds().removeIf(subtaskId -> subtaskId == id);
+
+        historyManager.remove(subtaskMap.get(id).getId()); // удаляем из истории просмотров
+        subtaskMap.remove(id);    // удаляем Подзадачу
         updateEpicStatus(idEpic); // обновляем Эпик
     }
 
-
     //3. Дополнительные методы: a. Получение списка всех подзадач определённого эпика. - скорее всего.
     @Override
-    public ArrayList<Subtask> listOfEpicSubtasks(int idEpic) {
-        ArrayList<Subtask> listSubtasks = new ArrayList<>(); // создаем список
+    public ArrayList<Subtask> listOfEpicSubtasks(int idEpic) { // метод переделан через .stream()
         Epic epic = epicMap.get(idEpic); // Находим Эпик по id
-        if (epic != null) { // Проверка, если такого Эпика не существует
-            for (int subtaskId : epic.getListSubtaskIds()) { // проходимся по списку подзадач Эпика
-                Subtask subtask = subtaskMap.get(subtaskId); // Находим Subtask
-                listSubtasks.add(subtask); // добавляем subtask в список
-            }
+        if (epic == null) { // Проверка, если такого Эпика не существует
+            return new ArrayList<>(); // Возвращаем пустой ArrayList, если эпик не найден
         }
-        return listSubtasks;
+
+        return epic.getListSubtaskIds().stream()                   // Берём список id подзадач Эпика
+                .map(subtaskMap::get)                              // Преобразовываем id в сами подзадачи
+                .filter(Objects::nonNull)                          // Фильтруем удалённые или отсутствующие подзадачи
+                .collect(Collectors.toCollection(ArrayList::new)); // Собираем результат в ArrayList
     }
 
 }

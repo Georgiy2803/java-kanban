@@ -9,6 +9,9 @@ import model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InMemoryTaskManagerTest {
@@ -252,4 +255,68 @@ public class InMemoryTaskManagerTest {
         taskManager.deleteAllSubtask();
         assertEquals(3, taskManager.getHistory().size(), "Истории просмотров не пустая");
     }
+
+
+    /* Добавление задач и проверка, что они все попали в списки (HashMap) и отсортированный список (sortedTasks).
+    Так же проверка, что задачи отсортированные в списке верно.
+     */
+    @Test
+    void addTasks_checkSizeOfList_checkSortedList () {
+        // создаём задачи
+        taskManager.createTask(new Task("Task1", "", LocalDateTime.of(2025, 6, 21, 11, 1), Duration.ofMinutes(58)));
+        taskManager.createTask(new Task("Task2", "", LocalDateTime.of(2025, 6, 21, 13, 0), Duration.ofMinutes(20)));
+        taskManager.createTask(new Task("Task3", "", LocalDateTime.of(2025, 6, 21, 12, 0), Duration.ofMinutes(20)));
+        taskManager.createTask(new Task("Task4", "", LocalDateTime.of(2025, 6, 21, 12, 21), Duration.ofMinutes(38)));
+        taskManager.createTask(new Task("Task5", "", LocalDateTime.of(2025, 6, 21, 10, 0), Duration.ofMinutes(60)));
+        taskManager.createTask(new Task("Task6", "Описание 1")); // создаём задачу без времени
+        taskManager.createTask(new Task("Task7", "Описание 2")); // создаём задачу без времени
+
+        taskManager.createEpic(new Epic("Эпик 1", "3 подзадачи"));
+        taskManager.createEpic(new Epic("Эпик 2", "1 подзадача"));
+        taskManager.createSubtask(new Subtask("Подзадача 1", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 15, 1), Duration.ofMinutes(55)));
+        taskManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 6), Duration.ofMinutes(20)));
+        taskManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 15, 57), Duration.ofMinutes(8)));
+        taskManager.createSubtask(new Subtask("Подзадача 4", "принадлежит Эпику 2", 9));
+
+        // проверка количества Task в списке (HashMap)
+        assertEquals(7, taskManager.getTasks().size(), "В списке хеш-таблицы не верное количество Task");
+        // количество Эпиков в списке (HashMap)
+        assertEquals(2, taskManager.getEpics().size(), "В списке хеш-таблицы не верное количество Эпиков");
+        // количество Subtask в списке (HashMap)
+        assertEquals(4, taskManager.getSubtask().size(), "В списке хеш-таблицы не верное количество Subtask");
+
+        // количество задач в отсортированном списке по приоритету (startTime)
+        assertEquals(9, taskManager.getPrioritizedTasks().size(), "В списке отсортирванные задачи по приоритету (startTime) не верное количество задач");
+
+
+
+        // Проверка правильности сортировки задач
+        assertEquals("Task5", taskManager.getPrioritizedTasks().get(0).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Task1", taskManager.getPrioritizedTasks().get(1).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Task3", taskManager.getPrioritizedTasks().get(2).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Task4", taskManager.getPrioritizedTasks().get(3).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Task2", taskManager.getPrioritizedTasks().get(4).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Эпик 1", taskManager.getPrioritizedTasks().get(5).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Подзадача 1", taskManager.getPrioritizedTasks().get(6).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Подзадача 3", taskManager.getPrioritizedTasks().get(7).getName(), "Задача в отсортированном списке не правильно расположена");
+        assertEquals("Подзадача 2", taskManager.getPrioritizedTasks().get(8).getName(), "Задача в отсортированном списке не правильно расположена");
+
+    }
+
+    @Test
+    void addTasks_checkIntersectionOfTasks () { // Проверка, что при пересечении задачи, задача не добавляется в список (HashMap)
+        // добавляем задачи
+        taskManager.createTask(new Task("Task1", "", LocalDateTime.of(2025, 6, 21, 11, 1), Duration.ofMinutes(58)));
+        taskManager.createTask(new Task("Task2", "", LocalDateTime.of(2025, 6, 21, 12, 0), Duration.ofMinutes(20)));
+        // пытаемся добавить задачу у которой есть пересечение
+        taskManager.createTask(new Task("Task3", "", LocalDateTime.of(2025, 6, 21, 12, 0), Duration.ofMinutes(20)));
+        // добавляем задачи у которых нет пересечений
+        taskManager.createTask(new Task("Task4", "", LocalDateTime.of(2025, 6, 21, 12, 21), Duration.ofMinutes(38)));
+        taskManager.createTask(new Task("Task5", "", LocalDateTime.of(2025, 6, 21, 10, 0), Duration.ofMinutes(60)));
+
+        // Проверяем, что в HashMap количество Task меньше на одну, т.к. одна задача (Task3) не была добавлена из-за пересечения
+        assertEquals(4, taskManager.getTasks().size(), "В списке хеш-таблицы не верное количество Task");
+
+    }
+
 }

@@ -1,6 +1,9 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Epic extends Task{
 
@@ -8,16 +11,26 @@ public class Epic extends Task{
 
     public Epic(String name, String description) { // Конструктор для создания
         super(name, description);
+        this.taskType = TaskType.EPIC;
     }
 
     public Epic(String name, String description, Integer id) { // Конструктор для обновления: наименования и описания
         super(name, description, id);
         this.status = Status.NEW;
+        this.taskType = TaskType.EPIC;
     }
 
     public ArrayList<Integer> getListSubtaskIds() {
         return listSubtaskIds;
     }
+
+    /*public LocalDateTime getEndTime() {
+        return endTime;
+    }
+       Duration duration = Duration.between(startTime, endTime);
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }*/
 
     public void addSubtaskId(int subtaskId) {
         if(subtaskId != getId()) { // проверка, чтобы id Эпика нельзя было добавить в список, где хранятся Подзадачи
@@ -27,11 +40,13 @@ public class Epic extends Task{
 
     @Override
     public String toString() {
-        return " \n" + getClass().getSimpleName() +
+        return " \n" + taskType +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
-                ", in Subtask=" + listSubtaskIds ;
+                ", входящие подзадачи=" + listSubtaskIds +
+                ", начало эпика= " + (startTime != null ? startTime.format(formatter) : "не установлено") +
+                ", конец эпика= " + (endTime != null ? endTime.format(formatter) : "не определён");
     }
 }
