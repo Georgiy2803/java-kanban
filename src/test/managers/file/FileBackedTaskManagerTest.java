@@ -166,8 +166,8 @@ public class FileBackedTaskManagerTest {
         fileManager.createEpic(new Epic("Эпик 1", "3 подзадачи"));
         fileManager.createEpic(new Epic("Эпик 2", "1 подзадача"));
         fileManager.createSubtask(new Subtask("Подзадача 1", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 15, 1), Duration.ofMinutes(55)));
-        fileManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 6), Duration.ofMinutes(200)));
-        fileManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 0), Duration.ofMinutes(5)));
+        fileManager.createSubtask(new Subtask("Подзадача 2", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 16, 6), Duration.ofMinutes(20)));
+        fileManager.createSubtask(new Subtask("Подзадача 3", "принадлежит Эпику 1", 8, LocalDateTime.of(2025, 6, 21, 17, 0), Duration.ofMinutes(5)));
         fileManager.createSubtask(new Subtask("Подзадача 4", "принадлежит Эпику 2", 9));
 
         // проверка количества Task в списке (HashMap)
@@ -212,7 +212,7 @@ public class FileBackedTaskManagerTest {
         assertEquals(14, task8.getId(), "id задачи неверный");
 
         // удаляем файлы по окончанию теста
-        File originalFile = new File(fileTest);
+       File originalFile = new File(fileTest);
         boolean deletedOriginalFile = originalFile.delete();
         if (deletedOriginalFile) {
             System.out.println("Файл успешно удалён.");

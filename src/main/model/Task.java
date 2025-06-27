@@ -9,13 +9,16 @@ public class Task implements Cloneable  {
     protected String description;
     protected Integer id;
     protected Status status;
-    protected Duration duration; //  продолжительность задачи, оценка того, сколько времени она займёт в минутах
+    protected TaskType taskType;
     protected LocalDateTime startTime; // дата и время, когда предполагается приступить к выполнению задачи
+    protected Duration duration; //  продолжительность задачи, оценка того, сколько времени она займёт в минутах
+    protected LocalDateTime endTime; // дата и время завершения задачи - рассчитывается исходя из startTime и duration
 
     public Task(String name, String description) { // Конструктор для создания задачи
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
+        this.taskType = TaskType.TASK;
     }
 
     // Конструктор для создания с меткой времени
@@ -23,8 +26,10 @@ public class Task implements Cloneable  {
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
+        this.taskType = TaskType.TASK;
         this.startTime = startTime;
         this.duration = duration;
+        this.endTime = startTime.plus(duration);
     }
 
     // Конструктор для обновления и записи из файла
@@ -33,6 +38,19 @@ public class Task implements Cloneable  {
         this.description = description;
         this.id = id;
         this.status = status;
+        this.taskType = TaskType.TASK;
+    }
+
+    // Конструктор для обновления с меткой времени
+    public Task(String name, String description, Integer id, Status status, LocalDateTime startTime, Duration duration) {
+        this.name = name;
+        this.description = description;
+        this.id = id;
+        this.status = status;
+        this.taskType = TaskType.TASK;
+        this.startTime = startTime;
+        this.duration = duration;
+        this.endTime = startTime.plus(duration);
     }
 
     public Task(String name, String description, Integer id) { // Конструктор для обновления Эпика
@@ -49,9 +67,9 @@ public class Task implements Cloneable  {
     }
 
     // дата и время завершения задачи - рассчитывается исходя из startTime и duration.
-    public LocalDateTime getEndTime(Duration duration, LocalDateTime startTime) {
+    /*public LocalDateTime getEndTime(Duration duration, LocalDateTime startTime) {
         return startTime.plus(duration);
-    }
+    }*/
 
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd.MM.yy");
 
@@ -87,6 +105,14 @@ public class Task implements Cloneable  {
         this.status = status;
     }
 
+    public TaskType getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(TaskType taskType) {
+        this.taskType = taskType;
+    }
+
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -103,6 +129,13 @@ public class Task implements Cloneable  {
         this.duration = duration;
     }
 
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -118,13 +151,13 @@ public class Task implements Cloneable  {
 
     @Override
     public String toString() {
-        return "\n" + getClass().getSimpleName() +
+        return "\n" + taskType +
                 ". name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
                 ", начало задачи= " + (startTime != null ? startTime.format(formatter) : "не установлено") +
-                ", конец задачи= " + (startTime != null && duration != null ? getEndTime(duration, startTime).format(formatter) : "не определён");
+                ", конец задачи= " + (startTime != null && duration != null ? endTime.format(formatter) : "не определён");
     }
 
 }
