@@ -96,56 +96,27 @@ public class FileBackedTaskManagerTest {
 
         assertEquals(8, lineCount, "Задачи или отсутствуют в файле или их количество не совпадает");
 
-
-        // Создаём копию файла
-        String copyFileTest = "src\\main\\managers\\file\\copyFileToSaveTest.CSV";
-        Path sourcePath = Paths.get(fileTest);
-        Path targetPath = Paths.get(copyFileTest);
-
-        try {
-            Files.copy(sourcePath, targetPath);
-            System.out.println("Файл успешно скопирован.");
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при копировании файла: ", e);
-        }
-
-        // Удаляем "задачи" в хеш-таблицах, имитируя перезагрузку приложения
-        fileManager.deleteAllTasks();
-        fileManager.deleteAllEpic();
-        fileManager.deleteAllSubtask();
-
-        assertEquals(0, fileManager.getTasks().size(), "Список задач не пуст");
-        assertEquals(0, fileManager.getEpics().size(), "Список задач не пуст");
-        assertEquals(0, fileManager.getSubtask().size(), "Список задач не пуст");
-
-        // Загружаем "задачи" из файла в хеш-таблицы
-        File copyFile = new File(copyFileTest);
-        fileManager.readFile(copyFile);
+        // создаём новый объект и проверяем, что в него загрузились задачи из файла.
+        FileBackedTaskManager newFileManager = new FileBackedTaskManager(new InMemoryHistoryManager(), new File(fileTest));
 
         // Проверяем, что "задачи" появились в хеш-таблицах после загрузки из файла
-        assertEquals(2, fileManager.getTasks().size(), "Хеш-таблица задач не соответствует размеру");
-        assertEquals(2, fileManager.getEpics().size(), "Хеш-таблица эпиков не соответствует размеру");
-        assertEquals(3, fileManager.getSubtask().size(), "Хеш-таблица подзадач не соответствует размеру");
+        assertEquals(2, newFileManager.getTasks().size(), "Хеш-таблица задач не соответствует размеру");
+        assertEquals(2, newFileManager.getEpics().size(), "Хеш-таблица эпиков не соответствует размеру");
+        assertEquals(3, newFileManager.getSubtask().size(), "Хеш-таблица подзадач не соответствует размеру");
 
         // Проверяем, что у Эпика отобразились его подзадачи
-        //System.out.println(fileManager.getEpicById(3).get().getListSubtaskIds());
-        assertEquals("[5, 6, 7]", fileManager.getEpicById(3).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
-        assertEquals("[]", fileManager.getEpicById(4).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
+
+        assertEquals("[5, 6, 7]", newFileManager.getEpicById(3).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
+        assertEquals("[]", newFileManager.getEpicById(4).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
 
         // Проверяем, после загрузки, у новых созданных задач id не пересекаются
-        Task task3 = fileManager.createTask(new Task("Задача 3", "Описание 3"));
+        Task task3 = newFileManager.createTask(new Task("Задача 3", "Описание 3"));
         assertEquals(8, task3.getId(), "id задачи неверный");
 
         // удаляем файлы по окончанию теста
         File originalFile = new File(fileTest);
         boolean deletedOriginalFile = originalFile.delete();
         if (deletedOriginalFile) {
-            System.out.println("Файл успешно удалён.");
-        } else {
-            System.out.println("Ошибка при удалении файла.");
-        }
-        boolean deletedCopyFile = copyFile.delete();
-        if (deletedCopyFile) {
             System.out.println("Файл успешно удалён.");
         } else {
             System.out.println("Ошибка при удалении файла.");
@@ -193,9 +164,14 @@ public class FileBackedTaskManagerTest {
 
         assertEquals(14, lineCount, "Задачи или отсутствуют в файле или их количество не совпадает");
 
-
         // создаём новый объект и проверяем, что в него загрузились задачи из файла.
         FileBackedTaskManager newFileManager = new FileBackedTaskManager(new InMemoryHistoryManager(), new File(fileTest));
+
+        System.out.println(newFileManager.getTasks());
+        System.out.println(newFileManager.getEpics());
+        System.out.println(newFileManager.getSubtask());
+        System.out.println();
+        System.out.println(newFileManager.getPrioritizedTasks());
 
         // Проверяем, что "задачи" появились в хеш-таблицах после загрузки из файла
         assertEquals(7, newFileManager.getTasks().size(), "Хеш-таблица задач не соответствует размеру");
@@ -203,7 +179,7 @@ public class FileBackedTaskManagerTest {
         assertEquals(4, newFileManager.getSubtask().size(), "Хеш-таблица подзадач не соответствует размеру");
 
         // Проверяем, что у Эпика отобразились его подзадачи
-        //System.out.println(fileManager.getEpicById(3).get().getListSubtaskIds());
+
         assertEquals("[10, 11, 12]", newFileManager.getEpicById(8).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
         assertEquals("[13]", newFileManager.getEpicById(9).get().getListSubtaskIds().toString(), "Подзадачи не соответствуют");
 
