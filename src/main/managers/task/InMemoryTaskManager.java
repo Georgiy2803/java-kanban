@@ -1,10 +1,8 @@
 package managers.task;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import managers.history.HistoryManager;
 import model.*;
 
@@ -13,8 +11,8 @@ public class InMemoryTaskManager implements TaskManager {
     protected HashMap<Integer, Epic> epicMap;
     protected HashMap<Integer, Subtask> subtaskMap;
     protected int id = 0; // поле идентификатора
-    private HistoryManager historyManager; // просмотренные задачи
-    private TreeSet<Task> sortedTasks; // Список задач отсортированных по startTime
+    protected HistoryManager historyManager; // просмотренные задачи
+    protected TreeSet<Task> sortedTasks; // Список задач отсортированных по startTime
 
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -27,6 +25,7 @@ public class InMemoryTaskManager implements TaskManager {
                 .thenComparingInt(Task::getId)); // затем сравниваем по Id
 
     }
+
 
     // 5-й спринт
     @Override
