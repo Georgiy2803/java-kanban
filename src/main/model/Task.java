@@ -105,9 +105,9 @@ public class Task implements Cloneable  {
         return taskType;
     }
 
-    public void setTaskType(TaskType taskType) {
+    /*public void setTaskType(TaskType taskType) {
         this.taskType = taskType;
-    }
+    }*/
 
     public LocalDateTime getStartTime() {
         return startTime;

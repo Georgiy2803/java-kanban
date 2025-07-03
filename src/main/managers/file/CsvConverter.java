@@ -7,15 +7,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class CsvConverter {
-    private String noData = "";
-    private FileBackedTaskManager fileTaskManager;
-
-    public CsvConverter(FileBackedTaskManager fileTaskManager) {
-        this.fileTaskManager = fileTaskManager;
-    }
+    private static String noData = "";
 
     // Метод для конвертации задачи в строку
-    public String taskToString(Task task) { // метод сохранения задачи в строку
+    public static String taskToString(Task task) { // метод сохранения задачи в строку
         return task.getId() + ";" + task.getTaskType() + ";" + task.getName() + ";"
                 + task.getStatus() + ";" + task.getDescription() + ";" + noData + ";"
                 + (task.getStartTime() != null ? task.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
@@ -24,7 +19,7 @@ public class CsvConverter {
     }
 
     // Перегрузка для Epic
-    public String taskToString(Epic epic) { // метод сохранения задачи в строку
+    public static String taskToString(Epic epic) { // метод сохранения задачи в строку
         return epic.getId() + ";" + epic.getTaskType() + ";" + epic.getName() + ";"
                 + epic.getStatus() + ";" + epic.getDescription() + ";" + noData + ";"
                 + (epic.getStartTime() != null ? epic.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
@@ -33,7 +28,7 @@ public class CsvConverter {
     }
 
     // Перегрузка для Subtask
-    public String taskToString(Subtask subtask) { // метод сохранения задачи в строку
+    public static String taskToString(Subtask subtask) { // метод сохранения задачи в строку
         return subtask.getId() + ";" + subtask.getTaskType() + ";" + subtask.getName() + ";"
                 + subtask.getStatus() + ";" + subtask.getDescription() + ";" + subtask.getEpicId() + ";"
                 + (subtask.getStartTime() != null ? subtask.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() : noData) + ";"
@@ -42,52 +37,89 @@ public class CsvConverter {
     }
 
     // Метод для формирования строки-заголовка
-    public String headingToString() {
+    public static String getHeader() {
         return "id;type;name;status;description;epic;startTime;duration;endTime";
     }
 
     // Метод для восстановления объекта из строки
-    public Task addFromString(String line) { // создаёт из строки объект и добавляет в хеш-таблицу
+    public static Task convertToObject(String line) { // Преобразовывает из строки объект
         String[] split = line.split(";", -1); // Разбиение строки на части
         try {
-            fileTaskManager.updateIdCounter(Integer.parseInt(split[0])); // Загружаем ID и заодно проверяем корректность данных
+            Integer checkConversion = Integer.parseInt(split[0]);// Если преобразование прошло успешно, то данные корректны
         } catch (NumberFormatException e) {
             return null; // Если ошибка, пропускаем строку
         }
-        // Создание базовой задачи
-        Task task = new Task(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));
-        task.setTaskType(TaskType.valueOf(split[1]));
+        // Десериализация данных
+        Integer id = Integer.parseInt(split[0]);
+        TaskType taskType = TaskType.valueOf(split[1]); // Тип задач
+        String name = split[2];
+        Status status = Status.valueOf(split[3]);
+        String description = split[4];
+        Integer epicId = "".equals(split[5]) ? null : Integer.parseInt(split[5]);
+        String StartTime = split[6];
+        String duration = split[7];
+        String endTime = split[8];
 
-        switch (task.getTaskType()) { // Обработка специфичных для типа данных
+        Task task = lineToTask(name, description, id, status);
+        switch (taskType) { // Обработка специфичных для типа данных
+            case TASK:
+                processingTimeForTask(task, StartTime, duration); // Обработка времени для задачи
+                break;
             case EPIC:
-                Epic epic = new Epic(task.getName(), task.getDescription(), task.getId());
-                epic.setStatus(task.getStatus());
+                Epic epic = lineToEpic(name, description, id, status);
                 task = epic; // Приведение к типу Epic
+                processingTimeForTask(task, StartTime, duration); // Обработка времени для задачи
+                processingTimeForEpic(epic, endTime); // Обработка времени для Эпик
                 break;
             case SUBTASK:
-                Subtask subtask = new Subtask(task.getName(), task.getDescription(), task.getId(), task.getStatus());
-                subtask.setEpicId(Integer.parseInt(split[5]));
+                Subtask subtask = lineToSubtask(name, description, id, status, epicId);
                 task = subtask; // Приведение к типу Subtask
+                processingTimeForTask(task, StartTime, duration); // Обработка времени для подзадачи
                 break;
             default:
                 break;
         }
+        return task;
 
-        // Обработка временных меток
-        if (!isNoData(split[6]) && !isNoData(split[7])) {
-            task.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[6])), ZoneId.of("Europe/Moscow")));
-            task.setDuration(Duration.ofMinutes(Long.parseLong(split[7])));
+    }
 
-            // Обработка поля endTime только для Epic
-            if (task.getTaskType() == TaskType.EPIC && !isNoData(split[8])) {
-                ((Epic) task).setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(split[8])), ZoneId.of("Europe/Moscow")));
-            }
+    public static Task lineToTask(String name,String description, Integer id, Status status) {
+        Task task = new Task(name, description, id, status);
+        return task;
+    }
+
+    public static Epic lineToEpic (String name,String description, Integer id, Status status) {
+        Epic epic = new Epic(name, description, id);
+        epic.setStatus(status);
+        return epic;
+    }
+
+    public static Subtask lineToSubtask (String name,String description, Integer id, Status status, Integer epicId) {
+        Subtask subtask = new Subtask(name, description, id, status);
+        subtask.setEpicId(epicId);
+        return subtask;
+    }
+
+    // Обработка времени для задачи и подзадачи
+    public static Task processingTimeForTask(Task task, String StartTime, String duration) {
+        if (!isNoData(StartTime) && !isNoData(duration)) {
+            task.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(StartTime)), ZoneId.of("Europe/Moscow")));
+            task.setDuration(Duration.ofMinutes(Long.parseLong(duration)));
         }
         return task;
     }
 
+    // Обработка времени для Эпик
+    public static Epic processingTimeForEpic(Epic epic, String endTime) {
+        if (!isNoData(endTime)) {
+            (epic).setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(endTime)), ZoneId.of("Europe/Moscow")));
+        }
+        return epic;
+    }
+
     // Метод для проверки на noData
-    private boolean isNoData(String value) {
+    private static boolean isNoData(String value) {
         return value == null || value.equals(noData) || value.trim().isEmpty();
     }
 }
+
