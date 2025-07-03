@@ -151,6 +151,7 @@ public class FileBackedTaskManagerTest {
         // количество задач в отсортированном списке по приоритету (startTime)
         assertEquals(9, fileManager.getPrioritizedTasks().size(), "В списке отсортирванные задачи по приоритету (startTime) не верное количество задач");
 
+
         // Проверяем, что "задачи" есть в файле
         int lineCount = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(fileTest))) {
@@ -167,11 +168,11 @@ public class FileBackedTaskManagerTest {
         // создаём новый объект и проверяем, что в него загрузились задачи из файла.
         FileBackedTaskManager newFileManager = new FileBackedTaskManager(new InMemoryHistoryManager(), new File(fileTest));
 
-        System.out.println(newFileManager.getTasks());
+        /*System.out.println(newFileManager.getTasks());
         System.out.println(newFileManager.getEpics());
         System.out.println(newFileManager.getSubtask());
         System.out.println();
-        System.out.println(newFileManager.getPrioritizedTasks());
+        System.out.println(newFileManager.getPrioritizedTasks());*/
 
         // Проверяем, что "задачи" появились в хеш-таблицах после загрузки из файла
         assertEquals(7, newFileManager.getTasks().size(), "Хеш-таблица задач не соответствует размеру");

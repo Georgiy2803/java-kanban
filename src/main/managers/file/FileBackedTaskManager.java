@@ -1,7 +1,6 @@
 package managers.file;
 
 import java.io.File;
-
 import exception.ManagerSaveException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
@@ -14,18 +13,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Optional;
 
-
-
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private File fileToSave;
-    private CsvConverter converter;
-
 
     // Из тз к 7-ому спринту. Пусть новый менеджер получает файл для автосохранения в своём конструкторе и сохраняет его в поле.
     public FileBackedTaskManager(HistoryManager historyManager, File file) {
         super(historyManager);
-        this.converter = new CsvConverter(this); // Передаем ссылку на FileBackedTaskManager в CsvConverter
-
         if (!file.exists()) { //  Проверяем, существует ли файл
             try {
                 file = new File(file.getPath());
@@ -42,9 +35,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         readFile(fileToSave);
     }
 
-    /* Из тз к 7-ому спринту.
-    Создайте статический метод static FileBackedTaskManager loadFromFile(File file), который будет восстанавливать
-     данные менеджера из файла при запуске программы. */
+    // Метод восстанавливает данные менеджера из файла при запуске программы.
     // Метод принимает имя файла, если такого файла не существует, то создаёт его.
     public static FileBackedTaskManager loadFromFile(String fileName) {
         File file = new File("src\\main\\managers\\file\\" + fileName);
@@ -69,18 +60,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave, false))) {
             writer.write('\uFEFF');
-            writer.write(converter.headingToString());
+            writer.write(CsvConverter.getHeader());
             writer.newLine();
             for (Task task : taskMap.values()) {
-                writer.write(converter.taskToString(task));
+                writer.write(CsvConverter.taskToString(task));
                 writer.newLine();
             }
             for (Epic epic : epicMap.values()) {
-                writer.write(converter.taskToString(epic));
+                writer.write(CsvConverter.taskToString(epic));
                 writer.newLine();
             }
             for (Subtask subtask : subtaskMap.values()) {
-                writer.write(converter.taskToString(subtask));
+                writer.write(CsvConverter.taskToString(subtask));
                 writer.newLine();
             }
             System.out.println("Данные успешно записаны в файл.");
@@ -95,8 +86,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                //Task task = converter.addFromString(line); // Преобразуем строку в объект
-                addMap(converter.addFromString(line)); // Добавляем задачу в мар
+                Task task = CsvConverter.convertToObject(line); // Преобразуем строку в объект
+                updateIdCounter(task.getId()); // задаём начальный номер id полученный из файла
+                addMap(task); // Добавляем задачу в мар
             }
         } catch (IOException e) {
             System.err.println("Ошибка при чтении файла: " + e.getMessage());
