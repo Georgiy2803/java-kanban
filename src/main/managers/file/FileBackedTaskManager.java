@@ -86,7 +86,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                Task task = CsvConverter.convertToObject(line); // Преобразуем строку в объект
+                Task task = CsvConverter.stringToTask(line); // Преобразуем строку в объект
                 updateIdCounter(task.getId()); // задаём начальный номер id полученный из файла
                 addMap(task); // Добавляем задачу в мар
             }
@@ -134,7 +134,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     // задаёт начальный номер id полученный из файла
-    public void updateIdCounter(int newId) {
+    private void updateIdCounter(int newId) {
         if (newId > id) {
             id = newId;
         }

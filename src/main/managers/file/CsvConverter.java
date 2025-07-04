@@ -41,62 +41,36 @@ public class CsvConverter {
         return "id;type;name;status;description;epic;startTime;duration;endTime";
     }
 
-    // Метод для восстановления объекта из строки
-    public static Task convertToObject(String line) { // Преобразовывает из строки объект
-        String[] split = line.split(";", -1); // Разбиение строки на части
-        try {
-            Integer checkConversion = Integer.parseInt(split[0]);// Если преобразование прошло успешно, то данные корректны
-        } catch (NumberFormatException e) {
-            return null; // Если ошибка, пропускаем строку
+    public static Task stringToTask(String line){
+        String[] parts = line.split(";",-1);
+        TaskType type = TaskType.valueOf(parts[1]);
+        switch(type) {
+            case TASK: return buildTask(parts);
+            case SUBTASK: return buildSubtask(parts);
+            case EPIC: return buildEpic(parts);
+            default: return null;
         }
-        // Десериализация данных
-        Integer id = Integer.parseInt(split[0]);
-        TaskType taskType = TaskType.valueOf(split[1]); // Тип задач
-        String name = split[2];
-        Status status = Status.valueOf(split[3]);
-        String description = split[4];
-        Integer epicId = "".equals(split[5]) ? null : Integer.parseInt(split[5]);
-        String StartTime = split[6];
-        String duration = split[7];
-        String endTime = split[8];
-
-        Task task = lineToTask(name, description, id, status);
-        switch (taskType) { // Обработка специфичных для типа данных
-            case TASK:
-                processingTimeForTask(task, StartTime, duration); // Обработка времени для задачи
-                break;
-            case EPIC:
-                Epic epic = lineToEpic(name, description, id, status);
-                task = epic; // Приведение к типу Epic
-                processingTimeForTask(task, StartTime, duration); // Обработка времени для задачи
-                processingTimeForEpic(epic, endTime); // Обработка времени для Эпик
-                break;
-            case SUBTASK:
-                Subtask subtask = lineToSubtask(name, description, id, status, epicId);
-                task = subtask; // Приведение к типу Subtask
-                processingTimeForTask(task, StartTime, duration); // Обработка времени для подзадачи
-                break;
-            default:
-                break;
-        }
-        return task;
-
     }
 
-    public static Task lineToTask(String name,String description, Integer id, Status status) {
-        Task task = new Task(name, description, id, status);
+    private static Task buildTask(String[] parts) {
+        Task task = new Task(parts[2], parts[4], Integer.parseInt(parts[0]), Status.valueOf(parts[3]));
+        processingTimeForTask(task, parts[6], parts[7]); // Обработка времени для задачи
         return task;
     }
 
-    public static Epic lineToEpic (String name,String description, Integer id, Status status) {
-        Epic epic = new Epic(name, description, id);
-        epic.setStatus(status);
+
+    private static Epic buildEpic(String[] parts) {
+        Epic epic = new Epic(parts[2], parts[4], Integer.parseInt(parts[0]));
+        epic.setStatus(Status.valueOf(parts[3]));
+        processingTimeForTask(epic, parts[6], parts[7]); // Обработка времени для задачи
+        processingTimeForEpic(epic, parts[8]); // Обработка времени для Эпик
         return epic;
     }
 
-    public static Subtask lineToSubtask (String name,String description, Integer id, Status status, Integer epicId) {
-        Subtask subtask = new Subtask(name, description, id, status);
-        subtask.setEpicId(epicId);
+    private static Subtask buildSubtask(String[] parts) {
+        Subtask subtask = new Subtask(parts[2], parts[4], Integer.parseInt(parts[0]), Status.valueOf(parts[3]));
+        subtask.setEpicId(Integer.parseInt(parts[5]));
+        processingTimeForTask(subtask, parts[6], parts[7]); // Обработка времени для подзадачи
         return subtask;
     }
 

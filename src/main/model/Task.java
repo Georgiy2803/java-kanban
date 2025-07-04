@@ -105,10 +105,6 @@ public class Task implements Cloneable  {
         return taskType;
     }
 
-    /*public void setTaskType(TaskType taskType) {
-        this.taskType = taskType;
-    }*/
-
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -124,8 +120,6 @@ public class Task implements Cloneable  {
     public void setDuration(Duration duration) {
         this.duration = duration;
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -149,5 +143,4 @@ public class Task implements Cloneable  {
                 ", начало задачи= " + (startTime != null ? startTime.format(formatter) : "не установлено") +
                 ", конец задачи= " + (getEndTime() != null ? getEndTime().format(formatter) : "не определён");
     }
-
 }
