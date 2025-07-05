@@ -1,32 +1,24 @@
 package managers.file;
 
 import java.io.File;
-
 import exception.ManagerSaveException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import managers.task.InMemoryTaskManager;
-import model.Epic;
-import model.Status;
-import model.Subtask;
-import model.Task;
+import model.*;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private File fileToSave;
 
     // Из тз к 7-ому спринту. Пусть новый менеджер получает файл для автосохранения в своём конструкторе и сохраняет его в поле.
-    public FileBackedTaskManager(HistoryManager historyManager, File file)  {
+    public FileBackedTaskManager(HistoryManager historyManager, File file) {
         super(historyManager);
-
         if (!file.exists()) { //  Проверяем, существует ли файл
             try {
                 file = new File(file.getPath());
@@ -43,9 +35,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         readFile(fileToSave);
     }
 
-    /* Из тз к 7-ому спринту.
-    Создайте статический метод static FileBackedTaskManager loadFromFile(File file), который будет восстанавливать
-     данные менеджера из файла при запуске программы. */
+    // Метод восстанавливает данные менеджера из файла при запуске программы.
     // Метод принимает имя файла, если такого файла не существует, то создаёт его.
     public static FileBackedTaskManager loadFromFile(String fileName) {
         File file = new File("src\\main\\managers\\file\\" + fileName);
@@ -67,30 +57,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileBackedTaskManager;
     }
 
-    private String toStringForSavingTasks(Task task) { // метод сохранения задачи в строку
-        if (task.getClass().getSimpleName().equals("Subtask")) {
-            Subtask subtask = (Subtask) task;
-            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription() + "," + subtask.getEpicId();
-        } else {
-            return task.getId() + "," + task.getClass().getSimpleName().toUpperCase() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription();}
-    }
-
     private void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave, false))) {
-            writer.write('\uFEFF'); // Добавляем BOM для UTF-8
-            writer.write("id,type,name,status,description,epic");
+            writer.write('\uFEFF');
+            writer.write(CsvConverter.getHeader());
             writer.newLine();
-            for (Task task : taskMap.values()) { // записываем Task в файл
-                writer.write(toStringForSavingTasks(task));
-                writer.newLine(); // Добавляем перенос строки между задачами
+            for (Task task : taskMap.values()) {
+                writer.write(CsvConverter.taskToString(task));
+                writer.newLine();
             }
-            for (Epic epic : epicMap.values()) { // записываем Epic в файл
-                writer.write(toStringForSavingTasks(epic));
-                writer.newLine(); // Добавляем перенос строки между задачами
+            for (Epic epic : epicMap.values()) {
+                writer.write(CsvConverter.taskToString(epic));
+                writer.newLine();
             }
-            for (Subtask subtask : subtaskMap.values()) { // записываем Subtask в файл
-                writer.write(toStringForSavingTasks(subtask));
-                writer.newLine(); // Добавляем перенос строки между задачами
+            for (Subtask subtask : subtaskMap.values()) {
+                writer.write(CsvConverter.taskToString(subtask));
+                writer.newLine();
             }
             System.out.println("Данные успешно записаны в файл.");
         } catch (IOException e) {
@@ -98,87 +80,61 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    // Этот метод должен был после считывания файла, сортировать строки по id (так я решал проблему, обозначенную Вами
-    // в комментариях ( - сабтаск считан раньше эпика или файл будет изменен вручную) ), а уже потом передавать в addFromString.
-    // Но я не смог заставить его работать. Возникают какие-то ошибки при чтении данных, из-за чего сортировка не работает!!!
-
-    /*public void readFile(File file) { // считывает файл по строкам
-        List<String> lines = new ArrayList<>();
+    private void readFile(File file) { // считывает файл по строкам конвертирует и добавляет его в мар
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            reader.readLine(); // Читаем и игнорируем первую строку (заголовочную)
+
             String line;
             while ((line = reader.readLine()) != null) {
-                lines.add(line);
+                Task task = CsvConverter.stringToTask(line); // Преобразуем строку в объект
+                updateIdCounter(task.getId()); // задаём начальный номер id полученный из файла
+                addMap(task); // Добавляем задачу в мар
             }
         } catch (IOException e) {
             System.err.println("Ошибка при чтении файла: " + e.getMessage());
         }
 
-        // Сортируем строки по ID
-        Collections.sort(lines, (a, b) -> {
-            // Убираем невидимый символ из строки для обоих элементов перед сравнением
-            String[] split1 = a.split(",");
-            split1[0] = split1[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
+        // Связываем подзадачи с их эпиками
+        calcualteData();
+    }
 
-            String[] split2 = b.split(",");
-            split2[0] = split2[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
-
-            return Integer.compare(Integer.parseInt(split1[0]), Integer.parseInt(split2[0]));
-
-            });
-
-        // Обрабатываем отсортированные строки
-        for (String line : lines) {
-            addFromString(line);
-        }
-    }*/
-
-
-    public void readFile(File file) { // считывает файл по строкам
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                addFromString(line); // Передаём строку в метод forString для обработки
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка при чтении файла: " + e.getMessage());
+    private void addMap (Task task) { // добавляем задачу в соответсвующий Мар
+        switch (task.getTaskType()) {
+            case TASK:
+                taskMap.put(task.getId(), task);
+                if (task.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+                    sortedTasks.add(task); // добавляем в sortedTasks
+                }
+                break;
+            case EPIC:
+                epicMap.put(task.getId(), (Epic) task);
+                if (task.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+                    sortedTasks.add(task); // добавляем в sortedTasks
+                }
+                break;
+            case SUBTASK:
+                subtaskMap.put(task.getId(), (Subtask) task);
+                if (task.getStartTime() != null) { // проверяем, задано ли время начала у объекта
+                    sortedTasks.add(task); // добавляем в sortedTasks
+                }
+                break;
+            default:
+                break;
         }
     }
 
-    private void addFromString(String line) { // создаёт из строки объект и добавляет в хеш-таблицу
-        String[] split = line.split(",");
-        split[0] = split[0].replace("\uFEFF", ""); // Убираем невидимый символ из строки
-        try { // пропускаем первую строчку, так как она оглавление
-            iDFromBackup(Integer.parseInt(split[0]));
-        } catch (NumberFormatException e) {
-            return;
-        }
-        Status status = Status.valueOf(split[3]); // Преобразуем строку в объект Status
-        switch (split[1]) { // определяем какой тип задачи и сохраняем в соответсвующую хеш-таблицу
-            case "TASK":
-                Task task = new Task(split[2], split[4], Integer.parseInt(split[0]), status);  // создаём объект
-                taskMap.put(task.getId(), task); // Добавляем задачу в taskMap
-                break;
-            case "EPIC":
-                Epic epic = new Epic(split[2], split[4], Integer.parseInt(split[0]));  // создаём объект
-                epic.setStatus(Status.valueOf(split[3]));
-                epicMap.put(epic.getId(), epic); // Добавляем задачу в taskMap
-                break;
-            case "SUBTASK":
-                Subtask subtask = new Subtask(split[2], split[4], Integer.parseInt(split[0]), Status.valueOf(split[3]));
-                subtask.setEpicId(Integer.parseInt(split[5]));
-                subtaskMap.put(subtask.getId(), subtask); // Добавляем задачу в taskMap
-                Epic epicThisSubtask = epicMap.get(Integer.parseInt(split[5])); // Находим Эпик по id
-                if (epicThisSubtask != null) { // Проверка, если такого Эпика не существует
-                    epicThisSubtask.addSubtaskId(Integer.parseInt(split[0])); // добавляем id Subtask в Список Эпика
-                }
-                break;
-            default: // если ни одно условие не подошло
-                break;
+    // Связываем подзадачи с их эпиками
+    private void calcualteData() {
+        for (Subtask subtask : subtaskMap.values()) {
+            Epic epic = epicMap.get(subtask.getEpicId());
+            if (epic != null) {
+                epic.addSubtaskId(subtask.getId()); // Добавляем id подзадачи в список связанных подзадач
+            }
         }
     }
 
     // задаёт начальный номер id полученный из файла
-    private void iDFromBackup(int newId) {
+    private void updateIdCounter(int newId) {
         if (newId > id) {
             id = newId;
         }
