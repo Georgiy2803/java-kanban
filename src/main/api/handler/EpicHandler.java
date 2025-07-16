@@ -27,16 +27,22 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         switch (endpoint) {
             case GET_EPIC:
                 handleGetEpicId(exchange);
+                break;
             case GET_EPICS:
                 handleGetEpics(exchange);
+                break;
             case GET_EPIC_SUBTASKS:
                 handleGetEpicSubtasks(exchange);
+                break;
             case POST_EPIC:
                 handleCreateEpic(exchange);
+                break;
             case DELETE_EPIC:
                 handleDeleteEpic(exchange);
+                break;
             case UNKNOWN:
                 sendMethodNotAllowed(exchange);
+                break;
         }
     }
 

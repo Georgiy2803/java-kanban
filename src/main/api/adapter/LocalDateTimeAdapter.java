@@ -3,16 +3,7 @@ package api.adapter;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import java.io.IOException;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -33,7 +24,11 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime>{
     public LocalDateTime read(final JsonReader jsonReader) throws IOException {
         String startTimeStr = jsonReader.nextString();
         if (!startTimeStr.isEmpty()) {
-            return LocalDateTime.parse(startTimeStr, dtf);
+            try {
+                return LocalDateTime.parse(startTimeStr, dtf);
+            } catch (Exception e) {
+                throw new IOException("Invalid date format for LocalDateTime: " + startTimeStr, e);
+            }
         }
         return null;
     }
