@@ -76,22 +76,37 @@ public class CsvConverter {
 
     // Обработка времени для задачи и подзадачи
     public static Task processingTimeForTask(Task task, String StartTime, String duration) {
-        if (!isNoData(StartTime) && !isNoData(duration)) {
-            task.setStartTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(StartTime)), ZoneId.of("Europe/Moscow")));
-            task.setDuration(Duration.ofMinutes(Long.parseLong(duration)));
-        }
+        task.setStartTime(stringToDate(StartTime));
+        task.setDuration(stringToDuration(duration));
         return task;
     }
 
     // Обработка времени для Эпик
     public static Epic processingTimeForEpic(Epic epic, String endTime) {
-        if (!isNoData(endTime)) {
-            (epic).setEndTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(endTime)), ZoneId.of("Europe/Moscow")));
-        }
+        epic.setEndTime(stringToDate(endTime));
         return epic;
     }
 
-    // Метод для проверки на noData
+    // конвертирует из строки - дату "начала задачи"/"конца задачи"
+    public static LocalDateTime stringToDate
+    (String line) {
+        if (isNoData(line)) {
+            return null;
+        } else {
+            return LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(line)), ZoneId.of("Europe/Moscow"));
+        }
+    }
+
+    // конвертирует из строки - "продолжительность задачи"
+    public static Duration stringToDuration(String line) {
+        if (isNoData(line)) {
+            return null;
+        } else {
+            return Duration.ofMinutes(Long.parseLong(line));
+        }
+    }
+
+    // Метод проверяет, является ли строка пустой, null или значение noData
     private static boolean isNoData(String value) {
         return value == null || value.equals(noData) || value.trim().isEmpty();
     }
