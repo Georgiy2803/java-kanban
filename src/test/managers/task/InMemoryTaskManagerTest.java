@@ -1,5 +1,7 @@
 package managers.task;
 
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import model.Epic;
@@ -13,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InMemoryTaskManagerTest {
 
@@ -27,14 +30,14 @@ public class InMemoryTaskManagerTest {
 
     // Тесты Task
     @Test
-    void getTaskById_returnSameTaskObject() {
+    void getTaskById_returnSameTaskObject() throws NotFoundException, IntersectionException {
         Task task = taskManager.createTask(new Task("Название задачи", "Описание задачи"));
         // проверка, что созданный Task и полученный по id равны
         assertEquals(task, taskManager.getTaskById(task.getId()).get(), "Задачи не совпадают");
     }
 
     @Test
-    void getTaskById_returnSameTaskcWithSAmeFields() {
+    void getTaskById_returnSameTaskcWithSAmeFields() throws NotFoundException, IntersectionException {
         Task task = taskManager.createTask(new Task("Название задачи", "Описание задачи"));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
         assertEquals(task.getName(), taskManager.getTaskById(task.getId()).get().getName(), "Наименования Task не совпадают");
@@ -44,7 +47,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void deleteTask_reflectedInList() {
+    void deleteTask_reflectedInList() throws IntersectionException {
         Task task1 = taskManager.createTask(new Task("Название задачи1", "Описание задачи1"));
         taskManager.createTask(new Task("Название задачи2", "Описание задачи2"));
         taskManager.createTask(new Task("Название задачи3", "Описание задачи3"));
@@ -59,14 +62,14 @@ public class InMemoryTaskManagerTest {
     // Тесты Epic
 
     @Test
-    void getEpicById_returnSameEpicObject() { // get Epic By Id_end the same Epic object
+    void getEpicById_returnSameEpicObject() throws NotFoundException { // get Epic By Id_end the same Epic object
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
         // проверка, что созданный Epic и полученный по id равны
         assertEquals(epic, taskManager.getEpicById(epic.getId()).get(), "Эпики не совпадают");
     }
 
     @Test
-    void getEpicById_returnSameEpicWithSAmeFields() {
+    void getEpicById_returnSameEpicWithSAmeFields() throws NotFoundException {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
         assertEquals(epic.getName(), taskManager.getEpicById(epic.getId()).get().getName(), "Наименования Эпик не совпадают");
@@ -77,7 +80,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void deleteEpic_deleteCorrespondingSubtasks() { //Проверка, что Эпик удаляется вместе с подзадачами
+    void deleteEpic_deleteCorrespondingSubtasks() throws IntersectionException { //Проверка, что Эпик удаляется вместе с подзадачами
         Epic epic1 = taskManager.createEpic(new Epic("Название Эпик1", "Описание Эпик1"));
         Epic epic2 = taskManager.createEpic(new Epic("Название Эпик2", "Описание Эпик2"));
         taskManager.createEpic(new Epic("Название Эпик3", "Описание Эпик3"));
@@ -97,7 +100,7 @@ public class InMemoryTaskManagerTest {
     // Тесты Subtask
 
     @Test
-    void getSubtaskById_returnSameSubtaskObject() {
+    void getSubtaskById_returnSameSubtaskObject() throws NotFoundException, IntersectionException {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
         Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId()));
         // проверка, что созданный Subtask и полученный по id равны
@@ -105,7 +108,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getSubtaskById_returnSameSubtaskWithSAmeFields() {
+    void getSubtaskById_returnSameSubtaskWithSAmeFields() throws NotFoundException, IntersectionException {
         Epic epic = taskManager.createEpic(new Epic("Название Эпик", "Описание Эпик"));
         Subtask subtask = taskManager.createSubtask(new Subtask("Название подзазачи", "Описание подзазачи", epic.getId()));
         // проверка, что переданные поля при создании метода, совпадают с теми, что есть в менеджере
@@ -117,7 +120,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void deleteSubtask_UpdatedListSubtaskEpic() {
+    void deleteSubtask_UpdatedListSubtaskEpic() throws NotFoundException, IntersectionException {
         Epic epic1 = taskManager.createEpic(new Epic("Название Эпик1", "Описание Эпик1"));
         Epic epic2 = taskManager.createEpic(new Epic("Название Эпик2", "Описание Эпик2"));
         Subtask subtask1 = taskManager.createSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", epic1.getId()));
@@ -139,7 +142,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void updateSubtask_UpdateStatusEpic() {
+    void updateSubtask_UpdateStatusEpic() throws IntersectionException, NotFoundException {
         Epic epic1 = taskManager.createEpic(new Epic("Название Эпик1", "Описание Эпик1"));
         Subtask subtask1 = taskManager.createSubtask(new Subtask("Название подзадачи1", "Описание подзадачи3", epic1.getId()));
         Subtask subtask2 = taskManager.createSubtask(new Subtask("Название подзадачи2", "Описание подзадачи2", epic1.getId()));
@@ -160,7 +163,7 @@ public class InMemoryTaskManagerTest {
     // тесты getHistory
 
     @Test
-    void getHistoryTask_returnOldUpdateTask() { // HistoryManager сохраняет предыдущую версию задачи и её данных
+    void getHistoryTask_returnOldUpdateTask() throws IntersectionException, NotFoundException { // HistoryManager сохраняет предыдущую версию задачи и её данных
         Task task1 = taskManager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
         taskManager.getTaskById(task1.getId()); // просматриваем задачу
         taskManager.updateTask(new Task("Имя 2", "Описание 2", task1.getId(), Status.DONE)); // обновляем задачу
@@ -168,7 +171,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getHistoryTask_returnSameTaskWithSAmeFields() {  // Полученная задача из истории соответствуют задаче в менеджере
+    void getHistoryTask_returnSameTaskWithSAmeFields() throws NotFoundException, IntersectionException {  // Полученная задача из истории соответствуют задаче в менеджере
         Task task1 = taskManager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
         taskManager.getTaskById(task1.getId()); // просматриваем задачу
         // проверяем поля
@@ -180,7 +183,7 @@ public class InMemoryTaskManagerTest {
 
 
     @Test
-    void getHistoryEpic_returnSameEpicWithSAmeFields() {  // Полученный Эпик из истории соответствуют Эпик в менеджере
+    void getHistoryEpic_returnSameEpicWithSAmeFields() throws NotFoundException {  // Полученный Эпик из истории соответствуют Эпик в менеджере
         Epic epic1 = taskManager.createEpic(new Epic("Имя 1", "Описание 1")); // создаём Эпик
         taskManager.getEpicById(epic1.getId()); // просматриваем задачу
         // проверяем поля
@@ -191,7 +194,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getHistorySubtask_returnSameSubtaskWithSAmeFields() {  // Полученный Subtask из истории соответствуют Subtask в менеджере
+    void getHistorySubtask_returnSameSubtaskWithSAmeFields() throws NotFoundException, IntersectionException {  // Полученный Subtask из истории соответствуют Subtask в менеджере
         Epic epic1 = taskManager.createEpic(new Epic("Эпик 1", "Описание эпик 1")); // создаём Эпик
         Subtask subtask1 = taskManager.createSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", epic1.getId())); // создаём задачу
         taskManager.getSubtaskById(subtask1.getId()); // просматриваем задачу
@@ -203,7 +206,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void remove_deleteAllTasks_removeAllTasksInHistory () {
+    void remove_deleteAllTasks_removeAllTasksInHistory () throws NotFoundException, IntersectionException {
         taskManager.createTask(new Task("Имя 1", "Описание 1")); // создаём задачу
         taskManager.createTask(new Task("Имя 2", "Описание 2")); // создаём задачу
         taskManager.createTask(new Task("Имя 3", "Описание 3")); // создаём задачу
@@ -217,7 +220,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void remove_deleteAllEpic_removeAllEpicAndSubtaskInHistory () {
+    void remove_deleteAllEpic_removeAllEpicAndSubtaskInHistory () throws NotFoundException, IntersectionException {
         Epic epic1 = taskManager.createEpic(new Epic("Эпик 1", "Описание Эпик1"));
         Epic epic2 = taskManager.createEpic(new Epic("Эпик 2", "Описание Эпик2"));
         Epic epic3 = taskManager.createEpic(new Epic("Эпик 3", "Описание Эпик2"));
@@ -237,7 +240,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void remove_deleteAllSubtask_removeAllSubtaskInHistory () {
+    void remove_deleteAllSubtask_removeAllSubtaskInHistory () throws NotFoundException, IntersectionException {
         Epic epic1 = taskManager.createEpic(new Epic("Эпик 1", "Описание Эпик1"));
         Epic epic2 = taskManager.createEpic(new Epic("Эпик 2", "Описание Эпик2"));
         Epic epic3 = taskManager.createEpic(new Epic("Эпик 3", "Описание Эпик2"));
@@ -261,7 +264,7 @@ public class InMemoryTaskManagerTest {
     Так же проверка, что задачи отсортированные в списке верно.
      */
     @Test
-    void addTasks_checkSizeOfList_checkSortedList () {
+    void addTasks_checkSizeOfList_checkSortedList () throws IntersectionException {
         // создаём задачи
         taskManager.createTask(new Task("Task1", "", LocalDateTime.of(2025, 6, 21, 11, 1), Duration.ofMinutes(58)));
         taskManager.createTask(new Task("Task2", "", LocalDateTime.of(2025, 6, 21, 13, 0), Duration.ofMinutes(20)));
@@ -304,19 +307,22 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
-    void addTasks_checkIntersectionOfTasks () { // Проверка, что при пересечении задачи, задача не добавляется в список (HashMap)
-        // добавляем задачи
+    void addTasks_checkIntersectionOfTasks() throws Exception {
+        // Этап 1: Положительное тестирование (добавляем задачи без пересечения)
         taskManager.createTask(new Task("Task1", "", LocalDateTime.of(2025, 6, 21, 11, 1), Duration.ofMinutes(58)));
         taskManager.createTask(new Task("Task2", "", LocalDateTime.of(2025, 6, 21, 12, 0), Duration.ofMinutes(20)));
-        // пытаемся добавить задачу у которой есть пересечение
-        taskManager.createTask(new Task("Task3", "", LocalDateTime.of(2025, 6, 21, 12, 0), Duration.ofMinutes(20)));
-        // добавляем задачи у которых нет пересечений
-        taskManager.createTask(new Task("Task4", "", LocalDateTime.of(2025, 6, 21, 12, 21), Duration.ofMinutes(38)));
+        taskManager.createTask(new Task("Task4", "", LocalDateTime.of(2025, 6, 21, 12, 21),Duration.ofMinutes(38)));
         taskManager.createTask(new Task("Task5", "", LocalDateTime.of(2025, 6, 21, 10, 0), Duration.ofMinutes(60)));
 
+        // Этап 2: Негативное тестирование (пытаемся добавить задачу с пересечением)
+        try {
+            taskManager.createTask(new Task("Task3", "",LocalDateTime.of(2025, 6, 21, 12, 0),Duration.ofMinutes(20))); // Эта задача пересекается с Task2
+            fail("Ожидается исключение IntersectionException, но оно не было возбуждено");
+        } catch (IntersectionException expected) {}
+
+        // Этап 3: Итоговая проверка количества задач
         // Проверяем, что в HashMap количество Task меньше на одну, т.к. одна задача (Task3) не была добавлена из-за пересечения
-        assertEquals(4, taskManager.getTasks().size(), "В списке хеш-таблицы не верное количество Task");
-
+        assertEquals(4, taskManager.getTasks().size(),
+                "Количество задач в хеш-таблице должно быть равно 4, так как одна задача не была добавлена из-за пересечения");
     }
-
 }

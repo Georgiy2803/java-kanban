@@ -3,6 +3,8 @@ package managers.task;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.history.HistoryManager;
 import model.*;
 
@@ -53,10 +55,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     private boolean checkInterseption(Task targetTask) {
         if (targetTask.getStartTime() != null) { // если у задачи задано время начала
-            if (sortedTasks.stream().anyMatch(task -> checkInterseption(targetTask, task))) {
-                System.out.println("Задача " + targetTask.getName() + " не была добавлена/обновлена, т.к. пересекается с уже существующими задачами.");
-                return true;
-            }
+            return sortedTasks.stream().anyMatch(task -> checkInterseption(targetTask, task));
         }
         return false;
     }
@@ -125,21 +124,33 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2c. Получение по идентификатору.
     @Override
-    public Optional<Task> getTaskById(int id) { // getTaskById
-        historyManager.add(taskMap.get(id)); // добавляет запрос в историю просмотров
-        return Optional.ofNullable(taskMap.get(id));
+    public Optional<Task> getTaskById(int id) throws NotFoundException {
+        Task task = taskMap.get(id);
+        if (task == null) {
+            throw new NotFoundException("Задача с указанным ID не найдена");
+        }
+        historyManager.add(task); // добавляем запрос в историю просмотров
+        return Optional.of(task);
     }
 
     @Override
-    public Optional<Epic> getEpicById(int id) {
-        historyManager.add(epicMap.get(id)); // добавляет запрос в историю просмотров
-        return Optional.ofNullable(epicMap.get(id));
+    public Optional<Epic> getEpicById(int id) throws NotFoundException {
+        Epic epic = epicMap.get(id);
+        if (epic == null) {
+            throw new NotFoundException("Эпик с указанным ID не найден");
+        }
+        historyManager.add(epic); // добавляем запрос в историю просмотров
+        return Optional.of(epic);
     }
 
     @Override
-    public Optional<Subtask> getSubtaskById(int id) {
-        historyManager.add(subtaskMap.get(id)); // добавляет запрос в историю просмотров
-        return Optional.ofNullable(subtaskMap.get(id));
+    public Optional<Subtask> getSubtaskById(int id) throws NotFoundException {
+        Subtask subtask = subtaskMap.get(id);
+        if (subtask == null) {
+            throw new NotFoundException("Подзадача с указанным ID не найдена");
+        }
+        historyManager.add(subtask); // добавляем запрос в историю просмотров
+        return Optional.of(subtask);
     }
 
     private int getNextId() {
@@ -148,13 +159,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2d. Создание. Сам объект должен передаваться в качестве параметра.
     @Override
-    public Task createTask(Task inputTask) { // создание Task
+    public Task createTask(Task inputTask) throws IntersectionException {
         if (checkInterseption(inputTask)) { // проверяем, не пересекается ли она с другими задачами по времени
             getNextId(); // увеличиваем счётчик на 1, чтобы при добавлении Эпика и подзадач не выпадала ошибка с неверным id
-            return null;
+            throw new IntersectionException("Время задачи пересекается с другими задачами");
         }
+
         inputTask.setId(getNextId());
-        taskMap.put(id, inputTask);
+        taskMap.put(inputTask.getId(), inputTask);
         if (inputTask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
             sortedTasks.add(inputTask); // добавляем в sortedTasks
         }
@@ -169,19 +181,22 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask inputSubtask) { // создание Subtask
+    public Subtask createSubtask(Subtask inputSubtask) throws IntersectionException {
         if (checkInterseption(inputSubtask)) { // проверяем, не пересекается ли она с другими задачами по времени
-            return null;
+            throw new IntersectionException("Время подзадачи пересекается с другими задачами");
         }
+
         Epic epic = epicMap.get(inputSubtask.getEpicId()); // находим Эпик в мапе (получаем id Epic к которому привязаны)
         if (epic == null) { // проверяем существует ли Эпик
             throw new IllegalArgumentException("Подзадачу не удаётся добавить, т.к. Эпик указан не верно или не существует.");
         }
+
         inputSubtask.setId(getNextId());
-        subtaskMap.put(id, inputSubtask);
+        subtaskMap.put(inputSubtask.getId(), inputSubtask);
         if (inputSubtask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
             sortedTasks.add(inputSubtask); // добавляем в sortedTasks
         }
+
         // Обновляем Эпик
         addSubtaskToEpic(inputSubtask); // записывает в Эпик номер id Subtask к которому он привязан
         updateEpicDateTime(inputSubtask.getEpicId()); // записывает в Эпик время начала и завершения
@@ -226,26 +241,33 @@ public class InMemoryTaskManager implements TaskManager {
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
     @Override
-    public Optional<Task> updateTask(Task inputTask) {
-        if (taskMap.get(inputTask.getId()) == null) { // если объекта не существует, производим выход
-            return Optional.empty();
+    public Optional<Task> updateTask(Task inputTask) throws NotFoundException, IntersectionException {
+        // Проверяем, существует ли задача с указанным ID
+        if (!taskMap.containsKey(inputTask.getId())) {
+            throw new NotFoundException("Задача с указанным ID не найдена");
         }
-        if (checkInterseption(inputTask)) { // проверяем, не пересекается ли она с другими задачами по времени
-            return Optional.empty();
+
+        // Проверяем пересечения по времени
+        if (checkInterseption(inputTask)) {
+            throw new IntersectionException("Время задачи пересекается с другими задачами");
         }
-        sortedTasks.remove(taskMap.get(inputTask.getId())); // Удаляем старый объект в sortedTasks
-        if (inputTask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
-            sortedTasks.add(inputTask); // добавляем в sortedTasks обновленный объект
+
+        // Обновляем задачу
+        sortedTasks.remove(taskMap.get(inputTask.getId())); // Удаляем старую версию задачи из sortedTasks
+        if (inputTask.getStartTime() != null) {
+            sortedTasks.add(inputTask); // Добавляем обновлённую задачу в sortedTasks
         }
-        int oldId = inputTask.getId();
+
+        int oldId = inputTask.getId();// Обновляем задачу в карте задач
         taskMap.put(oldId, inputTask);
         return Optional.of(inputTask);
     }
 
     @Override
-    public Optional<Epic> updateEpic(Epic inputEpic) {
-        if (epicMap.get(inputEpic.getId()) == null) { // если объекта не существует, производим выход
-            return Optional.empty();
+    public Optional<Epic> updateEpic(Epic inputEpic) throws NotFoundException {
+        // Проверяем, существует ли задача с указанным ID
+        if (!epicMap.containsKey(inputEpic.getId())) {
+            throw new NotFoundException("Задача с указанным ID не найдена");
         }
 
         int oldId = inputEpic.getId(); // берём id старого Эпика
@@ -263,13 +285,17 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Optional<Subtask> updateSubtask(Subtask inputSubtask) {
-        if (subtaskMap.get(inputSubtask.getId()) == null) { // если объекта не существует, производим выход
-            return Optional.empty();
+    public Optional<Subtask> updateSubtask(Subtask inputSubtask) throws NotFoundException, IntersectionException {
+        // Проверяем, существует ли задача с указанным ID
+        if (!subtaskMap.containsKey(inputSubtask.getId())) {
+            throw new NotFoundException("Задача с указанным ID не найдена");
         }
-        if (checkInterseption(inputSubtask)) { // проверяем, не пересекается ли она с другими задачами по времени
-            return Optional.empty();
+
+        // Проверяем пересечения по времени
+        if (checkInterseption(inputSubtask)) {
+            throw new IntersectionException("Время задачи пересекается с другими задачами");
         }
+
         if (inputSubtask.getStartTime() != null) { // проверяем, задано ли время начала у объекта
             sortedTasks.remove(subtaskMap.get(inputSubtask.getId())); // Удаляем старый объект в sortedTasks
             sortedTasks.remove(epicMap.get(subtaskMap.get(inputSubtask.getId()).getEpicId())); // Удаляем старый объект в sortedTasks

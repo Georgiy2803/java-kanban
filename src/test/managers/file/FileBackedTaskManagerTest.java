@@ -1,5 +1,7 @@
 package managers.file;
 
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.history.InMemoryHistoryManager;
 import model.Epic;
 import model.Subtask;
@@ -56,7 +58,7 @@ public class FileBackedTaskManagerTest {
 
 
     @Test
-    void addTaskToFile_readTaskFromFail()  {  // Запись задач в файл, и считывание задач из файла.
+    void addTaskToFile_readTaskFromFail() throws NotFoundException, IntersectionException {  // Запись задач в файл, и считывание задач из файла.
         // Имитируем первый запуск приложения
         fileManager.deleteAllTasks();
         fileManager.deleteAllEpic();
@@ -124,7 +126,7 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    void addTaskOverTimeToFile_readTaskFromFail() {  // Запись задач в файл, и считывание задач из файла.
+    void addTaskOverTimeToFile_readTaskFromFail() throws NotFoundException, IntersectionException {  // Запись задач в файл, и считывание задач из файла.
         // Создаём "задачи"
         fileManager.createTask(new Task("Task1", "", LocalDateTime.of(2025, 6, 21, 11, 1), Duration.ofMinutes(58)));
         fileManager.createTask(new Task("Task2", "", LocalDateTime.of(2025, 6, 21, 13, 0), Duration.ofMinutes(20)));

@@ -1,0 +1,41 @@
+[33mcc5ff91[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint_9-solution-http-api[m[33m, [m[1;31morigin/sprint_9-solution-http-api[m[33m)[m HEAD@{0}: rebase (abort): returning to refs/heads/sprint_9-solution-http-api
+[33m4524039[m HEAD@{1}: rebase (start): checkout HEAD~3
+[33mcc5ff91[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint_9-solution-http-api[m[33m, [m[1;31morigin/sprint_9-solution-http-api[m[33m)[m HEAD@{2}: rebase (finish): returning to refs/heads/sprint_9-solution-http-api
+[33mcc5ff91[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint_9-solution-http-api[m[33m, [m[1;31morigin/sprint_9-solution-http-api[m[33m)[m HEAD@{3}: rebase (pick): 8 спринт. 6-коммит. исправление замечаний
+[33m7b12307[m HEAD@{4}: rebase (pick): 8 спринт. 5-коммит. исправление замечаний
+[33m279f89e[m HEAD@{5}: rebase (pick): 8 спринт. 4-коммит. исправление замечаний
+[33m4524039[m HEAD@{6}: rebase (pick): 8 спринт. 3-коммит. исправление замечаний
+[33m15827e5[m HEAD@{7}: rebase (pick): 8 спринт. 2-коммит. исправление замечаний
+[33m07cc607[m HEAD@{8}: rebase (pick): 8 спринт. 1-коммит.
+[33me2cf44d[m[33m ([m[1;31morigin/sprint_7-solution-in-file-manager[m[33m, [m[1;32msprint_7-solution-in-file-manager[m[33m)[m HEAD@{9}: rebase (start): checkout HEAD~3
+[33md3ae0bf[m HEAD@{10}: rebase (finish): returning to refs/heads/sprint_9-solution-http-api
+[33md3ae0bf[m HEAD@{11}: rebase (continue): A
+[33mae80a21[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{12}: rebase (start): checkout HEAD~2
+[33mcc1b7f6[m HEAD@{13}: reset: moving to HEAD
+[33mcc1b7f6[m HEAD@{14}: commit: 9 спринт. 2-коммит. исправления после замечании ии-бота
+[33me14155b[m HEAD@{15}: commit: 9 спринт. 1-коммит.
+[33mae80a21[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{16}: checkout: moving from main to sprint_9-solution-http-api
+[33mae80a21[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{17}: pull: Fast-forward
+[33m9af905f[m[33m ([m[1;31morigin/sprint_8-solution-time-and-duration[m[33m)[m HEAD@{18}: Branch: renamed refs/heads/sprint_8-solution-time-and-duration to refs/heads/main
+[33m9af905f[m[33m ([m[1;31morigin/sprint_8-solution-time-and-duration[m[33m)[m HEAD@{20}: commit: 8 спринт. 6-коммит. исправление замечаний
+[33m54be885[m HEAD@{21}: commit: 8 спринт. 5-коммит. исправление замечаний
+[33m7f27e73[m HEAD@{22}: commit: 8 спринт. 4-коммит. исправление замечаний
+[33m4d9724f[m HEAD@{23}: commit: 8 спринт. 3-коммит. исправление замечаний
+[33me1d64dd[m HEAD@{24}: commit: 8 спринт. 2-коммит. исправление замечаний
+[33m749b235[m HEAD@{25}: commit: 8 спринт. 1-коммит.
+[33m27aa5b5[m HEAD@{26}: checkout: moving from main to sprint_8-solution-time-and-duration
+[33m27aa5b5[m HEAD@{27}: checkout: moving from sprint_7-solution-in-file-manager to main
+[33me2cf44d[m[33m ([m[1;31morigin/sprint_7-solution-in-file-manager[m[33m, [m[1;32msprint_7-solution-in-file-manager[m[33m)[m HEAD@{28}: commit: 7 спринт. 3-коммит. исправление замечаний
+[33m5ac4858[m HEAD@{29}: checkout: moving from sprint_6-solution to sprint_7-solution-in-file-manager
+[33m60bc651[m[33m ([m[1;31morigin/sprint_6-solution[m[33m, [m[1;32msprint_6-solution[m[33m)[m HEAD@{30}: reset: moving to HEAD
+[33m60bc651[m[33m ([m[1;31morigin/sprint_6-solution[m[33m, [m[1;32msprint_6-solution[m[33m)[m HEAD@{31}: commit: 6-й спринт. Исправления после проверки Александром! - 3 коммит
+[33mcd3fa58[m HEAD@{32}: commit: 6-й спринт. Исправления после проверки Александром! -2 коммит
+[33me7e8b0c[m HEAD@{33}: commit: 6-й спринт. Исправления после проверки Александром! -2 коммит
+[33m5112975[m HEAD@{34}: commit: 6-й спринт. Исправления после проверки Александром!
+[33mc813503[m HEAD@{35}: commit: 6-й спринт. Исправления после проверки ИИ!
+[33m319c2f8[m HEAD@{36}: commit: 6-й спринт. Исправления после проверки ИИ!
+[33m6e247e5[m HEAD@{37}: commit: 6-й спринт. Создание первой ветки. Мой первый коммит!
+[33m4d014ea[m HEAD@{38}: checkout: moving from main to sprint_6-solution
+[33m4d014ea[m HEAD@{39}: commit: 5-й спринт. Мой 4-й коммит!
+[33m094afb7[m HEAD@{40}: commit: 5-й спринт. Мой 3-й коммит!
+[33mb6f00ad[m HEAD@{41}: clone: from github.com:Georgiy2803/java-kanban.git
