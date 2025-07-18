@@ -1,6 +1,8 @@
 package apiTest.handlerTest;
 
 import api.HttpTaskServer;
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.Managers;
 import managers.task.TaskManager;
 import model.Status;
@@ -49,7 +51,7 @@ public class HistoryHandlerTest {
     }
 
     @Test
-    public void checkingHistoryTask() throws IOException, InterruptedException, URISyntaxException {
+    public void checkingHistoryTask() throws IOException, InterruptedException, URISyntaxException, NotFoundException, IntersectionException {
         taskManager.createTask(task1);
         taskManager.createTask(task2);
         taskManager.getTaskById(1);
@@ -59,6 +61,9 @@ public class HistoryHandlerTest {
                 .uri(uri)
                 .GET()
                 .build();
+        System.out.println(uri);
+        System.out.println(request);
+
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode(), "Cтатус ответа 200, была " +
                 "запрошена история просмотров задач");

@@ -5,12 +5,18 @@ import api.adapter.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.Managers;
+import managers.task.InMemoryTaskManager;
 import managers.task.TaskManager;
+import model.Task;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.LocalDateTime;
+
+import static managers.Managers.getDefaultHistory;
 
 public class HttpTaskServer {
     private static final int PORT = 8080;
@@ -49,11 +55,14 @@ public class HttpTaskServer {
         httpServer.stop(0);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NotFoundException, IntersectionException {
         HttpTaskServer server = new HttpTaskServer(Managers.getDefault());
+        TaskManager manager = Managers.getDefault();
+
+
         server.startServer();// запускаем сервер
         System.out.println("HTTP-сервер запущен на порте " + PORT + "!");
-        server.stopServer();// завершаем работу сервера
+        // server.stopServer();// завершаем работу сервера
     }
 
 }

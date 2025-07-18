@@ -6,6 +6,31 @@ import managers.task.InMemoryTaskManager;
 import managers.task.TaskManager;
 
 //  Managers: содержит статические методы для создания различных менеджеров:
+
+/*public class Managers {
+    // 1. Сделаем одиночный экземпляр InMemoryHistoryManager
+    private static final HistoryManager DEFAULT_HISTORY_MANAGER = new InMemoryHistoryManager();
+
+    // 2. Метод getDefaultHistory теперь возвращает единый экземпляр
+    public static HistoryManager getDefaultHistory() {
+        return DEFAULT_HISTORY_MANAGER;
+    }
+
+    // 3. Оставляем неизменным метод getDefault
+    public static TaskManager getDefault() {
+        return new InMemoryTaskManager(getDefaultHistory());
+    }
+}*/
+
+/*public class Managers {
+
+    public static HistoryManager getDefaultHistory() {
+        return new InMemoryHistoryManager();
+    }
+}*/
+
+
+// Старый
 public class Managers {
     public static TaskManager getDefault() {
         return new InMemoryTaskManager(getDefaultHistory());
@@ -13,8 +38,7 @@ public class Managers {
 
     //  Статический метод getDefaultHistory, который возвращает объект InMemoryHistoryManager — историю просмотров.
     public static HistoryManager getDefaultHistory() { // создаёт экземпляр InMemoryHistoryManager, который реализует интерфейс HistoryManager.
-        // каждый раз, когда мы запрашиваем менеджер истории, создаётся новый экземпляр класса InMemoryHistoryManager
-        return new InMemoryHistoryManager();
+        return new InMemoryHistoryManager(); // каждый раз, когда мы запрашиваем менеджер истории, создаётся новый экземпляр класса InMemoryHistoryManager
     }
 }
 

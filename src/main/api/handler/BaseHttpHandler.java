@@ -30,9 +30,13 @@ public class BaseHttpHandler {
     }
 
     // отправка в порядке
-    protected void sendOk(HttpExchange exchange) throws IOException {
-        exchange.sendResponseHeaders(200, 0);// Отправляем заголовки ответа с кодом состояния 200 (OK) и длиной содержимого 0
-        exchange.close();// Закрываем соединение
+    protected void sendOkUpdate(HttpExchange exchange, String text) throws IOException {
+        byte[] response = text.getBytes(StandardCharsets.UTF_8); // Преобразуем строку text в массив байтов с использованием кодировки UTF-8
+        exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");// Устанавливаем заголовок Content-Type для ответа, указывая, что данные будут в формате JSON с кодировкой UTF-8
+        exchange.sendResponseHeaders(201, response.length);// Отправляем заголовки ответа с кодом состояния 200 (OK) и длиной содержимого равной длине массива байтов response
+        try (OutputStream os = exchange.getResponseBody()) { // Используем try-with-resources для автоматического закрытия OutputStream после записи данных
+            os.write(response); // Записываем массив байтов response в выходной поток
+        }
     }
 
     // отправка неверного запроса.
@@ -45,7 +49,7 @@ public class BaseHttpHandler {
         }
     }
 
-    // для отправки ответа в случае, если объект не был найден
+    // для отправки ответа 404 (Not Found) в случае, если объект не был найден
     protected void sendNotFound(HttpExchange exchange, String text) throws IOException {
         byte[] response = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "text/plain;charset=utf-8");
@@ -65,7 +69,7 @@ public class BaseHttpHandler {
         }
     }
 
-    // отправка создана
+    // Метод отправки ответа 201 (Created) создана
     protected void sendCreated(HttpExchange exchange, String text) throws IOException {
         byte[] response = text.getBytes(StandardCharsets.UTF_8);// Преобразуем строку text в массив байтов с использованием кодировки UTF-8
         exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");// Устанавливаем заголовок Content-Type для ответа, указывая, что данные будут в формате JSON с кодировкой UTF-8
@@ -75,7 +79,7 @@ public class BaseHttpHandler {
         }
     }
 
-    // отправка Внутренней ошибки Сервера
+    // отправка 500 (Internal Server Error) Внутренней ошибки Сервера
     protected void sendInternalServerError(HttpExchange exchange, String text) throws IOException {
         byte[] response = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "text/plain;charset=utf-8");
@@ -85,7 +89,7 @@ public class BaseHttpHandler {
         }
     }
 
-    // отправка не разрешена
+    // Метод отправки ответа 405 (Method Not Allowed) отправка не разрешена
     protected void sendMethodNotAllowed(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(405, 0);
         exchange.close();

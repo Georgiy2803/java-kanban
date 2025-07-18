@@ -15,15 +15,22 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler{
         super(taskManager, gson);
     }
 
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        System.out.println("Началась обработка /history запроса от клиента на вывод истории просмотров.");
+        String method = httpExchange.getRequestMethod(); // Получаем метод запроса
 
-        try {
-            List<Task> tasks = taskManager.getHistory();
-            sendText(httpExchange, gson.toJson(tasks));
-        } catch (IOException e) {
-            sendInternalServerError(httpExchange, "Internal Server Error");
+        if ("GET".equals(method)) {
+            System.out.println("Началась обработка /history запроса от клиента на вывод истории просмотров.");
+            try {
+                List<Task> tasks = taskManager.getHistory();
+                sendText(httpExchange, gson.toJson(tasks));
+            } catch (IOException e) {
+                sendInternalServerError(httpExchange, "Internal Server Error");
+            }
+        } else {
+            // исключение NotSupportedException
+            throw new UnsupportedOperationException("Разрешён только просмотр (GET) для истории задач.");
         }
     }
 

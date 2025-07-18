@@ -3,6 +3,8 @@ package api.handler;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import exception.IntersectionException;
+import exception.NotFoundException;
 import managers.task.TaskManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,127 +22,82 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        SubtaskHandler.Endpoint endpoint = getEndpoint(exchange.getRequestURI(), exchange.getRequestMethod());
+    public void handle(HttpExchange httpExchange) throws IOException {
+        String method = httpExchange.getRequestMethod();
+        URI requestURI = httpExchange.getRequestURI();
+        String path = requestURI.getPath();
+        String[] splitString = path.split("/");
 
-        switch (endpoint) {
-            case GET_SUBTASKS:
-                handleGetSubtasks(exchange);
-                break;
-            case GET_SUBTASKS_BY_ID:
-                handleGetSubtaskId(exchange);
-                break;
-            case CREATE_SUBTASKS:
-                handleCreateSubtask(exchange);
-                break;
-            case DELETE_SUBTASK:
-                handleDeleteSubtask(exchange);
-                break;
-            case UNKNOWN:
-                sendMethodNotAllowed(exchange);
-                break;
+        try {
+            switch (method) {
+                case "GET":
+                    if (splitString.length == 2) {
+                        handleGetSubtasks(httpExchange);
+                    } else {
+                        handleGetSubtaskById(httpExchange);
+                    }
+                    break;
+                case "POST":
+                    handleCreateOrUpdateSubtask(httpExchange);
+                    break;
+                case "DELETE":
+                    handleDeleteSubtask(httpExchange);
+                    break;
+                default:
+                    sendMethodNotAllowed(httpExchange);
+            }
+        } catch (NotFoundException e) {
+            sendNotFound(httpExchange, e.getMessage());
+        } catch (IntersectionException e) {
+            sendHasInteractions(httpExchange, e.getMessage());
+        } catch (Exception e) {
+            sendInternalServerError(httpExchange, "Internal Server Error");
         }
     }
-
-    private SubtaskHandler.Endpoint getEndpoint(URI uri, String method) {
-        String[] path = uri.getPath().split("/"); // Разбиваем путь из URI на части по символу '/'
-
-        switch (method) { // Используем switch для определения действия в зависимости от метода запроса
-            case "GET": // Если запрос типа GET
-                if (path.length >= 3 && path[2].matches("\\d+")) { // Проверяем, что путь включает id задачи
-                    return SubtaskHandler.Endpoint.GET_SUBTASKS_BY_ID; // Возвращаем GET_TASK_BY_ID, если указан id задачи
-                }
-                return SubtaskHandler.Endpoint.GET_SUBTASKS; // Если id не указан, возвращаем GET_SUBTASKS (получение всех задач)
-
-            case "POST": // Если запрос типа POST
-                return SubtaskHandler.Endpoint.CREATE_SUBTASKS; // Всегда возвращаем CREATE_SUBTASKS (создание новой задачи)
-
-            case "DELETE": // Если запрос типа DELETE
-                if (path.length >= 3 && path[2].matches("\\d+")) { // Проверяем, что путь включает id задачи
-                    return SubtaskHandler.Endpoint.DELETE_SUBTASK; // Возвращаем DELETE_SUBTASK, если указан id задачи
-                }
-                return SubtaskHandler.Endpoint.UNKNOWN; // Если id не указан, возвращаем UNKNOWN (неизвестный запрос)
-
-            default: // Для всех остальных методов (PUT, PATCH и т.д.)
-                return SubtaskHandler.Endpoint.UNKNOWN; // Возвращаем UNKNOWN (неизвестный запрос)
-        }
-    }
-
-    enum Endpoint {
-        GET_SUBTASKS,
-        GET_SUBTASKS_BY_ID,
-        CREATE_SUBTASKS,
-        DELETE_SUBTASK,
-        UNKNOWN
-    }
-
 
     public void handleGetSubtasks(HttpExchange httpExchange) throws IOException {
-        System.out.println("Началась обработка /subtasks запроса от клиента на вывод подзадач.");
+        System.out.println("Обработка запроса на вывод всех подзадач.");
         List<Subtask> subtasks = taskManager.getSubtask();
         sendText(httpExchange, gson.toJson(subtasks));
     }
 
-    public void handleGetSubtaskId(HttpExchange httpExchange) throws IOException {
-        System.out.println("Началась обработка /subtask/{id} запроса от клиента на вывод подзадачи по её id.");
+    public void handleGetSubtaskById(HttpExchange httpExchange) throws IOException, NotFoundException {
+        System.out.println("Обработка запроса на вывод подзадачи по id.");
         int id = searchIdTask(httpExchange);
-        Optional<Subtask> subtask = taskManager.getSubtaskById(id);
-        if (!subtask.isPresent()) {
-            sendNotFound(httpExchange, "Not Found");
-        } else {
-            String response = gson.toJson(subtask.get());
-            sendText(httpExchange, response);
-        }
+        Subtask subtask = taskManager.getSubtaskById(id).orElseThrow(() ->
+                new NotFoundException("Подзадача с указанным ID не найдена"));
+        sendText(httpExchange, gson.toJson(subtask));
     }
 
-    public void handleCreateSubtask(HttpExchange httpExchange) throws IOException {
-        System.out.println("Началась обработка /subtasks запроса от клиента на создание подзадачи.");
+    public void handleCreateOrUpdateSubtask(HttpExchange httpExchange) throws IOException, IntersectionException, NotFoundException {
+        System.out.println("Обработка запроса на создание или обновление подзадачи.");
         InputStream inputStream = httpExchange.getRequestBody();
         String subtaskString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         Subtask subtask = gson.fromJson(subtaskString, Subtask.class);
-        Integer idSubtask = subtask.getId() != null ? subtask.getId() : 0;
 
-        if (idSubtask == 0) { //создание подзадачи
-            Integer idSubtaskInEpic = subtask.getEpicId(); // вытаскиваем id Эпика к которому привязана подзадачи
-            //Проверяем существует ли такой Эпик
-            boolean isContainsIdEpic = false;
-            for (Epic epic : taskManager.getEpics()) {
-                if (epic.getId() == idSubtaskInEpic) {
-                    isContainsIdEpic = true;
-                    break;
-                }
-            }
-            if (!isContainsIdEpic) { // если Эпик не был найден
-                sendNotFound(httpExchange, "Эпическая задача с id указанном в подзадаче отсутствует");
-            } else if (taskManager.createSubtask(subtask) != null) { // проверяем, была ли создана задача
+        if (subtask.getId() == null || subtask.getId() == 0) {
+            // Создание новой подзадачи
+            Integer idSubtaskInEpic = subtask.getEpicId(); // вытаскиваем id Эпика к которому привязана подзадача
+            // Проверяем, существует ли такой Эпик
+            Optional<Epic> epic = taskManager.getEpicById(idSubtaskInEpic);
+            if (!epic.isPresent()) {
+                sendNotFound(httpExchange, "Эпическая задача с указанным ID не найдена");
+            } else {
+                taskManager.createSubtask(subtask);
                 sendCreated(httpExchange, gson.toJson(subtask));
-            } else {
-                sendHasInteractions(httpExchange, "Not Acceptable");
             }
-        } else { // обновление подзадачи
-            // Проверяем существует ли такая подзадача
-            boolean isContains = false;
-            for (Subtask thisSubtask : taskManager.getSubtask()) {
-                if (thisSubtask.getId() == idSubtask) {
-                    isContains = true;
-                    break;
-                }
-            }
-            if (isContains) { // если такая подзадача существует
-                taskManager.updateSubtask(subtask);
-                String response = "Подзадача успешно обновлена";
-                sendCreated(httpExchange, gson.toJson(response));
-            } else {
-                sendNotFound(httpExchange, "Подзадача с таким id в списках отсутствует");
-            }
+        } else {
+            // Обновление существующей подзадачи
+            taskManager.updateSubtask(subtask);
+            sendOkUpdate(httpExchange, gson.toJson("Подзадача успешно обновлена"));
         }
     }
 
     public void handleDeleteSubtask(HttpExchange httpExchange) throws IOException {
-        System.out.println("Началась обработка /subtask/{id} запроса от клиента на удаление подзадачи.");
-
+        System.out.println("Обработка запроса на удаление подзадачи.");
         int id = searchIdTask(httpExchange);
         taskManager.deleteSubtaskById(id);
-        sendText(httpExchange, "Subtask deleted");
+        sendText(httpExchange, "Подзадача успешно удалена");
     }
+
 }

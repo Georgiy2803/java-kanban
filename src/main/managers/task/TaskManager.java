@@ -1,5 +1,7 @@
 package managers.task;
 
+import exception.IntersectionException;
+import exception.NotFoundException;
 import model.Epic;
 import model.Subtask;
 import model.Task;
@@ -23,25 +25,25 @@ public interface TaskManager {
     void deleteAllSubtask();
 
     // 2c. Получение по идентификатору.
-    Optional<Task> getTaskById(int id);
+    Optional<Task> getTaskById(int id) throws NotFoundException;
 
-    Optional<Epic> getEpicById(int id);
+    Optional<Epic> getEpicById(int id) throws NotFoundException;
 
-    Optional<Subtask> getSubtaskById(int id);
+    Optional<Subtask> getSubtaskById(int id) throws NotFoundException;
 
     // 2d. Создание. Сам объект должен передаваться в качестве параметра.
-    Task createTask(Task inputTask);
+    Task createTask(Task inputTask) throws IntersectionException;
 
     Epic createEpic(Epic inputEpic);
 
-    Subtask createSubtask(Subtask inputSubtask);
+    Subtask createSubtask(Subtask inputSubtask) throws IntersectionException;
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
-    Optional<Task> updateTask (Task inputTask);
+    Optional<Task> updateTask (Task inputTask) throws NotFoundException, IntersectionException;
 
-    Optional<Epic> updateEpic (Epic inputEpic);
+    Optional<Epic> updateEpic (Epic inputEpic) throws NotFoundException;
 
-    Optional<Subtask> updateSubtask (Subtask inputSubtask);
+    Optional<Subtask> updateSubtask (Subtask inputSubtask) throws NotFoundException, IntersectionException;
 
     // 2f. Удаление по идентификатору.
     void deleteTaskById(int id);

@@ -1,7 +1,10 @@
 package managers.file;
 
 import java.io.File;
+
+import exception.IntersectionException;
 import exception.ManagerSaveException;
+import exception.NotFoundException;
 import managers.history.HistoryManager;
 import managers.history.InMemoryHistoryManager;
 import managers.task.InMemoryTaskManager;
@@ -142,7 +145,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     // создание объектов
     @Override
-    public Task createTask(Task inputTask) {
+    public Task createTask(Task inputTask) throws IntersectionException {
         super.createTask(inputTask);
         save();
         return inputTask;
@@ -156,7 +159,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask inputSubtask) { // создание Subtask
+    public Subtask createSubtask(Subtask inputSubtask) throws IntersectionException { // создание Subtask
         super.createSubtask(inputSubtask);
         save();
         return inputSubtask;
@@ -202,21 +205,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     // 2e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра.
     @Override
-    public Optional<Task> updateTask(Task inputTask) {
+    public Optional<Task> updateTask(Task inputTask) throws IntersectionException, NotFoundException {
         super.updateTask(inputTask);
         save();
         return Optional.of(inputTask);
     }
 
     @Override
-    public Optional<Epic> updateEpic(Epic inputEpic) {
+    public Optional<Epic> updateEpic(Epic inputEpic) throws NotFoundException {
         super.updateEpic(inputEpic);
         save();
         return Optional.of(inputEpic);
     }
 
     @Override
-    public Optional<Subtask> updateSubtask(Subtask inputSubtask) {
+    public Optional<Subtask> updateSubtask(Subtask inputSubtask) throws IntersectionException, NotFoundException {
         super.updateSubtask(inputSubtask);
         save();
         return Optional.of(inputSubtask);

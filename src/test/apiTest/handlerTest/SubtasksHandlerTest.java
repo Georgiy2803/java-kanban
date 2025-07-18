@@ -48,12 +48,12 @@ public class SubtasksHandlerTest {
     Duration duration = Duration.ofMinutes(30);
 
 
-    Subtask subtask = new Subtask("name", "description",2, Status.NEW,startTime, duration);
-    Subtask subtask1 = new Subtask("name1", "description1", 1, startTime1,duration);
-    Subtask subtask2 = new Subtask("name2", "description2",3,Status.NEW,startTime, duration);
-    Subtask subtask3 = new Subtask("name3", "description3", 1, startTime2,duration);
-    Subtask subtask4 = new Subtask("name4", "description4", 1, startTime3,duration);
-    Subtask subtask5 = new Subtask("name5", "description5", 5, startTime4,duration);
+    Subtask subtask = new Subtask("name", "description", 2, Status.NEW, startTime, duration);
+    Subtask subtask1 = new Subtask("name1", "description1", 1, startTime1, duration);
+    Subtask subtask2 = new Subtask("name2", "description2", 3, Status.NEW, startTime, duration);
+    Subtask subtask3 = new Subtask("name3", "description3", 1, startTime2, duration);
+    Subtask subtask4 = new Subtask("name4", "description4", 1, startTime3, duration);
+    Subtask subtask5 = new Subtask("name5", "description5", 5, startTime4, duration);
 
     Epic epic = new Epic("Epic", "description-Epic", 0);
 
@@ -95,7 +95,7 @@ public class SubtasksHandlerTest {
         assertEquals(1, taskManager.getEpics().size());
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class SubtasksHandlerTest {
                 "была обновлена, в Subtask указан id = 2.");
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
     }
 
     @Test
@@ -129,7 +129,7 @@ public class SubtasksHandlerTest {
                 "добавлена не была, в Subtask указан id > 0, но обновлять не чего");
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class SubtasksHandlerTest {
                 "пересекается по времени с другими задачами.");
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class SubtasksHandlerTest {
                 "не соответствует id эпической задачи.");
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class SubtasksHandlerTest {
                 "добавлена подзадача, в Subtask указан id = 0");
         assertEquals(2, taskManager.getSubtask().size());
         assertEquals(3, taskManager.getPrioritizedTasks().size());
-        assertEquals(0, taskManager.getHistory().size());
+        assertEquals(1, taskManager.getHistory().size());
 
         URI uri1 = new URI(baseUrl + "/subtasks/3");
         HttpRequest request1 = HttpRequest.newBuilder()
@@ -194,7 +194,7 @@ public class SubtasksHandlerTest {
                 "подзадача успешно выведена в теле ответа");
         assertEquals(2, taskManager.getSubtask().size());
         assertEquals(3, taskManager.getPrioritizedTasks().size());
-        assertEquals(1, taskManager.getHistory().size());
+        assertEquals(2, taskManager.getHistory().size());
         JsonElement jsonElement = JsonParser.parseString(response1.body());
         if (jsonElement.isJsonObject()) {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -220,7 +220,7 @@ public class SubtasksHandlerTest {
                 "успешно удалена");
         assertEquals(1, taskManager.getSubtask().size());
         assertEquals(2, taskManager.getPrioritizedTasks().size());
-        assertEquals(1, taskManager.getHistory().size());
+        assertEquals(2, taskManager.getHistory().size());
         String nameSubtask = taskManager.getSubtask().stream()
                 .map(Task::getName)
                 .findFirst()

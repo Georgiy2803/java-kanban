@@ -6,17 +6,17 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime>{
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd.MM.yy");
-    // public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd.MM.yy");
 
     @Override
     public void write(final JsonWriter jsonWriter, final LocalDateTime localDateTime) throws IOException {
-        if (localDateTime != null) { // Проверяем, что localDateTime не равно null
-            jsonWriter.value(localDateTime.format(dtf)); // Форматируем localDateTime и записываем его в JSON
+        if (localDateTime != null) {
+            jsonWriter.value(localDateTime.format(dtf));
         } else {
-            jsonWriter.value(""); // Если localDateTime равно null, записываем пустую строку в JSON
+            jsonWriter.value("");
         }
     }
 
@@ -26,11 +26,10 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime>{
         if (!startTimeStr.isEmpty()) {
             try {
                 return LocalDateTime.parse(startTimeStr, dtf);
-            } catch (Exception e) {
-                throw new IOException("Invalid date format for LocalDateTime: " + startTimeStr, e);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Недопустимый формат даты для LocalDateTime: " + startTimeStr, e);
             }
         }
         return null;
     }
-
 }

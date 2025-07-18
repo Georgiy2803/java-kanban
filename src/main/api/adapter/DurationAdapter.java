@@ -27,7 +27,7 @@ public class DurationAdapter extends TypeAdapter<Duration> {
             long minutes = Long.parseLong(value);
             return Duration.ofMinutes(minutes);
         } catch (NumberFormatException e) {
-            return null;
+            throw new IllegalArgumentException("Недопустимый формат продолжительности: " + value, e); // Возбуждаем исключение, если формат неправильный
         }
     }
 }
